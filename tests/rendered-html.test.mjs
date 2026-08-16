@@ -17,6 +17,7 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
   assert.match(html, /楽しさを/);
   assert.match(html, /希望快乐/);
   assert.doesNotMatch(html, /视觉主题|本站状态|缓慢生长中/);
+  assert.doesNotMatch(html, /现在先用三个位置看看版式/);
   assert.doesNotMatch(html, /花隙/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|taking shape/i);
 

@@ -52,7 +52,6 @@ export default function Home() {
           <p className="section-index">01 / DOUJIN PICKS</p>
           <h2>同人誌の<br />おすすめ</h2>
           <div>
-            <p>这里会放我认真读完、想再翻一次的本子。现在先用三个位置看看版式。</p>
             <a className="outline-button" href={`${basePath}/doujin/`}>推荐を見る <span>→</span></a>
           </div>
         </div>
