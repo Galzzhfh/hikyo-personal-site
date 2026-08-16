@@ -6,7 +6,7 @@ const metadataBase = new URL(configuredUrl.endsWith("/") ? configuredUrl : `${co
 
 export const metadata: Metadata = {
   metadataBase,
-  title: "花隙｜在無聊中寻觅快乐",
+  title: "秘境｜無聊中寻觅快乐",
   description: "分享喜欢的动画、游戏、音乐与生活碎片。希望快乐成为永恒。",
   icons: {
     icon: "favicon.jpg",
@@ -15,15 +15,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "zh_CN",
-    title: "花隙｜在無聊中寻觅快乐",
+    title: "秘境｜無聊中寻觅快乐",
     description: "分享喜欢的动画、游戏、音乐与生活碎片。希望快乐成为永恒。",
-    images: [{ url: "og.png", width: 1792, height: 896, alt: "花隙个人收藏站" }],
+    images: [{ url: "og-mikyo.png", width: 1792, height: 896, alt: "秘境个人收藏站" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "花隙｜在無聊中寻觅快乐",
+    title: "秘境｜無聊中寻觅快乐",
     description: "分享喜欢的动画、游戏、音乐与生活碎片。希望快乐成为永恒。",
-    images: ["og.png"],
+    images: ["og-mikyo.png"],
   },
 };
 

@@ -1,18 +1,22 @@
-# 花隙 · 个人收藏站
+# 秘境（ひきょう）· 个人二次元收藏站
 
 > 無聊中寻觅快乐，希望快乐成为永恒。
 
-一个用来分享动画、游戏、音乐、摄影与生活碎片的个人网站。视觉取自逆光花枝照片，以旧纸白、冷雾蓝和低饱和樱粉为主色。
+一个用来分享动画、游戏、同人誌与纯音乐的个人网站。首页使用 `cg` 文件夹中的 6 张差分图缓慢交替，并叠加白色樱花下落效果。
 
-## 修改内容
+## 内容位置
 
-- 首页文字与卡片：`app/page.tsx`
+- 首页内容与推荐卡片：`app/page.tsx`
+- CG 差分序列：`app/components/CgBackdrop.tsx`
+- 白色樱花特效：`app/components/SakuraFall.tsx`
+- 音乐页：`app/music/page.tsx`
+- 播放器与合成试听：`app/music/MusicPlayer.tsx`
 - 颜色、排版与动画：`app/globals.css`
 - 网站标题与分享信息：`app/layout.tsx`
-- 首页照片：`public/sakura-memory.jpg`
-- 社交分享封面：`public/og.png`
+- CG 素材：`public/cg/scene-01/`
+- 社交分享封面：`public/og-mikyo.png`
 
-现有文章和收藏文字是内容样刊，替换为自己的真实分享即可。
+现在的推荐卡片与三首纯音乐都是效果样稿。以后加入新的差分图时，把图片复制到 `public/cg/scene-01/`，并同步修改 `CgBackdrop.tsx` 中的帧数即可。
 
 ## 本地预览
 
@@ -23,7 +27,9 @@ pnpm install
 pnpm dev
 ```
 
-打开 `http://localhost:3000`。
+首页：`http://localhost:3000/`
+
+音乐页：`http://localhost:3000/music/`
 
 ## 发布到 GitHub Pages
 
