@@ -15,7 +15,7 @@ export default function Home() {
           秘境<small>ひきょう</small>
         </a>
         <nav aria-label="主导航">
-          <a href="#notes">本子推荐</a>
+          <a href={`${basePath}/doujin/`}>本子推荐</a>
           <a href={`${basePath}/music/`}>音乐</a>
           <a href="#about">关于</a>
         </nav>
@@ -33,7 +33,7 @@ export default function Home() {
             动画、游戏、同人誌与纯音乐。<br />把偶然遇见的快乐，慢慢收进这里。
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href="#notes">开始漫游 <span>→</span></a>
+            <a className="primary-action" href={`${basePath}/doujin/`}>本子推荐 <span>→</span></a>
             <a className="secondary-action" href={`${basePath}/music/`}>播放音乐 <span>♪</span></a>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function Home() {
           <h2>同人誌の<br />おすすめ</h2>
           <div>
             <p>这里会放我认真读完、想再翻一次的本子。现在先用三个位置看看版式。</p>
-            <a className="outline-button" href="#pick-list">推荐を見る <span>→</span></a>
+            <a className="outline-button" href={`${basePath}/doujin/`}>推荐を見る <span>→</span></a>
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function Home() {
             <p className="vertical-copy">好きなものを、好きなままに。</p>
             <div>
               <span>ARCHIVE NOTE</span>
-              <h3>喜欢不需要<br />被匆忙解释。</h3>
+              <h3>楽しさを<br />探して。</h3>
               <p>以后可以继续增加分类、标签与完整文章页。</p>
             </div>
           </article>
@@ -90,7 +90,7 @@ export default function Home() {
         <div>
           <p className="section-index">02 / INSTRUMENTAL ROOM</p>
           <h2>纯音乐，适合让时间慢一点。</h2>
-          <p>独立音乐页已经准备好唱片播放器和三首合成试听样曲。</p>
+          <p>独立音乐页保留唱片动效，并通过网易云外链播放收藏的曲目。</p>
         </div>
         <a className="light-button" href={`${basePath}/music/`}>进入音乐室 <span>→</span></a>
       </section>
@@ -106,22 +106,19 @@ export default function Home() {
         </div>
         <div className="about-copy">
           <p className="section-index">03 / ABOUT</p>
-          <h2>这里是我的<br />快乐存档。</h2>
+          <h2>希望快乐<br />成为永恒</h2>
           <p>
-            分享喜欢的二次元作品、同人誌、游戏与音乐。CG 背景会随着之后加入的差分继续变化，
-            这个小站也会一点点长成真正属于我的秘境。
+            分享喜欢的二次元作品、同人誌、游戏与音乐。
           </p>
           <dl>
             <div><dt>收藏内容</dt><dd>动画 · 游戏 · 同人誌 · 纯音乐</dd></div>
-            <div><dt>视觉主题</dt><dd>差分 CG · 白色樱花 · 柔和光影</dd></div>
-            <div><dt>本站状态</dt><dd><span /> 缓慢生长中</dd></div>
           </dl>
         </div>
       </section>
 
       <footer>
         <a className="brand" href="#top">秘境<small>ひきょう</small></a>
-        <p>愿快乐在这里，被好好记住。</p>
+        <p>無聊中寻觅快乐</p>
         <div><span>PERSONAL ARCHIVE</span><span>© 2026</span></div>
       </footer>
     </main>

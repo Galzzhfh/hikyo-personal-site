@@ -7,9 +7,9 @@ export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "音乐室｜秘境",
-  description: "秘境的纯音乐播放器与试听样曲。",
-  openGraph: { title: "音乐室｜秘境", description: "秘境的纯音乐播放器与试听样曲。" },
-  twitter: { card: "summary", title: "音乐室｜秘境", description: "秘境的纯音乐播放器与试听样曲。" },
+  description: "光ある場所へ · 忍",
+  openGraph: { title: "音乐室｜秘境", description: "光ある場所へ · 忍" },
+  twitter: { card: "summary", title: "音乐室｜秘境", description: "光ある場所へ · 忍" },
 };
 
 export default function MusicPage() {
@@ -21,7 +21,7 @@ export default function MusicPage() {
       <header className="site-header music-header">
         <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
         <nav aria-label="主导航">
-          <a href={`${basePath}/`}>首页</a><a href={`${basePath}/#notes`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
+          <a href={`${basePath}/`}>首页</a><a href={`${basePath}/doujin/`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
         </nav>
         <a className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></a>
       </header>
@@ -31,7 +31,6 @@ export default function MusicPage() {
         <div className="music-intro">
           <p className="eyebrow"><span /> INSTRUMENTAL ROOM</p>
           <h1>音楽室</h1>
-          <p>放一张唱片，让思绪暂时停在这里。</p>
         </div>
         <MusicPlayer />
       </section>

@@ -26,6 +26,8 @@ if (basePath) {
 
 }
 
-const musicDirectory = new URL("music/", clientDirectory);
-await mkdir(musicDirectory, { recursive: true });
-await copyFile(new URL("music.html", clientDirectory), new URL("index.html", musicDirectory));
+for (const route of ["music", "doujin"]) {
+  const routeDirectory = new URL(`${route}/`, clientDirectory);
+  await mkdir(routeDirectory, { recursive: true });
+  await copyFile(new URL(`${route}.html`, clientDirectory), new URL("index.html", routeDirectory));
+}

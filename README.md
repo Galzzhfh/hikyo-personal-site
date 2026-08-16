@@ -10,13 +10,15 @@
 - CG 差分序列：`app/components/CgBackdrop.tsx`
 - 白色樱花特效：`app/components/SakuraFall.tsx`
 - 音乐页：`app/music/page.tsx`
-- 播放器与合成试听：`app/music/MusicPlayer.tsx`
+- 唱片与网易云外链播放器：`app/music/MusicPlayer.tsx`
+- 同人誌资源卡片页：`app/doujin/page.tsx`
 - 颜色、排版与动画：`app/globals.css`
 - 网站标题与分享信息：`app/layout.tsx`
 - CG 素材：`public/cg/scene-01/`
 - 社交分享封面：`public/og-mikyo.png`
+- 当前歌曲封面：`public/song-cover.jpg`
 
-现在的推荐卡片与三首纯音乐都是效果样稿。以后加入新的差分图时，把图片复制到 `public/cg/scene-01/`，并同步修改 `CgBackdrop.tsx` 中的帧数即可。
+当前音乐页使用网易云歌曲 ID `1367154014` 的官方外链播放器。以后加入新的差分图时，把图片复制到 `public/cg/scene-01/`，并同步修改 `CgBackdrop.tsx` 中的帧数即可。
 
 ## 本地预览
 
@@ -30,6 +32,8 @@ pnpm dev
 首页：`http://localhost:3000/`
 
 音乐页：`http://localhost:3000/music/`
+
+同人誌推荐页：`http://localhost:3000/doujin/`
 
 ## 发布到 GitHub Pages
 
