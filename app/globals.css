@@ -241,8 +241,10 @@ h1 em { color: #fff; font-style: normal; }
   position: absolute;
   top: -7vh;
   left: var(--petal-left);
-  color: rgba(255,255,255,var(--petal-opacity));
+  color: rgb(var(--petal-color) / var(--petal-opacity));
   font-size: var(--petal-size);
+  filter: blur(var(--petal-blur));
+  text-shadow: 0 0 var(--petal-glow) rgb(var(--petal-color) / .38);
   line-height: 1;
   text-shadow: 0 2px 8px rgba(61,70,72,.22);
   animation-duration: var(--petal-duration);

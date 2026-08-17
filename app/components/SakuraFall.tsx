@@ -4,6 +4,8 @@ const petals = Array.from({ length: 34 }, (_, index) => {
   const direction = index % 2 === 0 ? 1 : -1;
   const firstDrift = direction * (24 + ((index * 29) % 88));
   const secondDrift = direction * -1 * (18 + ((index * 17) % 76));
+  const isRosePetal = index % 5 === 0;
+  const isBlushPetal = !isRosePetal && index % 4 === 0;
 
   return {
     left: `${(index * 37 + 7) % 101}%`,
@@ -14,6 +16,10 @@ const petals = Array.from({ length: 34 }, (_, index) => {
     firstDrift: `${firstDrift}px`,
     secondDrift: `${secondDrift}px`,
     spin: `${direction * (420 + ((index * 41) % 520))}deg`,
+    color: isRosePetal ? "220 126 155" : isBlushPetal ? "247 188 206" : "255 255 255",
+    glow: isRosePetal ? "8px" : isBlushPetal ? "5px" : "2px",
+    blur: index % 11 === 0 ? ".7px" : "0px",
+    glyph: isRosePetal || isBlushPetal ? "❀" : "✿",
   };
 });
 
@@ -33,8 +39,11 @@ export default function SakuraFall() {
             "--petal-drift-a": petal.firstDrift,
             "--petal-drift-b": petal.secondDrift,
             "--petal-spin": petal.spin,
+            "--petal-color": petal.color,
+            "--petal-glow": petal.glow,
+            "--petal-blur": petal.blur,
           } as CSSProperties}
-        >✿</span>
+        >{petal.glyph}</span>
       ))}
     </div>
   );

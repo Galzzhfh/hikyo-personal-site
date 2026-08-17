@@ -147,3 +147,16 @@ test("public navigation uses hash views so the music provider is not reloaded", 
   assert.match(musicRoute, /PublicViewRedirect[^>]+view="music"/);
   assert.doesNotMatch(publicApp, /next\/link/);
 });
+
+test("falling sakura mixes white and pink petals", async () => {
+  const [sakura, css] = await Promise.all([
+    readFile(new URL("../app/components/SakuraFall.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(sakura, /220 126 155/);
+  assert.match(sakura, /247 188 206/);
+  assert.match(sakura, /255 255 255/);
+  assert.match(css, /--petal-color/);
+  assert.match(css, /--petal-glow/);
+});
