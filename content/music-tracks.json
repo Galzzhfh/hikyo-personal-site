@@ -6,5 +6,13 @@
     "songId": "1367154014",
     "cover": "song-cover.jpg",
     "createdAt": "2026-08-17"
+  },
+  {
+    "id": "track-2737806685-msx6swz4",
+    "title": "蔚蓝浩空",
+    "artist": "Mglory",
+    "songId": "2737806685",
+    "cover": "music/track-2737806685-msx6swz4-msx6swz4.jpg",
+    "createdAt": "2026-08-17"
   }
 ]
