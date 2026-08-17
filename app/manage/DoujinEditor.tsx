@@ -127,7 +127,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         tags: parsedTags.length ? parsedTags : ["同人誌"],
         cover: coverPath,
         sourceUrl: form.sourceUrl.trim(),
-        createdAt: existingPost?.createdAt || now.toISOString().slice(0, 10),
+        createdAt: existingPost?.createdAt || now.toISOString(),
       };
       const nextPosts = editingId
         ? currentPosts.map((post) => post.id === editingId ? nextPost : post)

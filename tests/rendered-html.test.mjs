@@ -58,10 +58,25 @@ test("doujin recommendations are exported as a dedicated resource grid", async (
 
   assert.match(html, /同人誌の.*おすすめ/s);
   assert.match(html, /resource-grid/);
-  assert.match(html, /光が差す部屋/);
+  assert.match(html, /resource-toolbar/);
+  assert.match(html, /最多赞/);
+  assert.match(html, /静かな午後/);
   assert.match(html, /好きなままに/);
   assert.match(html, /owner-entry/);
   assert.doesNotMatch(html, />管理投稿</);
+});
+
+test("doujin gallery supports persistent one-device likes and sorting", async () => {
+  const [gallery, route, schema] = await Promise.all([
+    readFile(new URL("../app/doujin/DoujinGallery.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/doujin-likes/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(gallery, /hikyo-doujin-device-v1/);
+  assert.match(gallery, /sortMode === "likes"/);
+  assert.match(route, /onConflictDoNothing/);
+  assert.match(schema, /doujin_likes_post_device_pk/);
 });
 
 test("owner editor is exported without embedding credentials", async () => {

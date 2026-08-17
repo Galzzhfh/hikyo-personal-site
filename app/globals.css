@@ -452,6 +452,10 @@ footer > div { display: flex; justify-content: space-between; gap: 18px; color: 
 .doujin-hero-copy .eyebrow { margin-bottom: 20px; }
 .doujin-hero-copy h1 { font-size: clamp(55px, 7vw, 100px); line-height: 1.03; }
 .resource-section { padding: 64px clamp(20px, 6vw, 96px) 110px; }
+.resource-toolbar { width: min(1500px, 100%); display: flex; justify-content: flex-end; gap: 6px; margin: 0 auto 20px; }
+.resource-toolbar button { min-width: 76px; padding: 9px 14px; border: 1px solid rgba(98,112,118,.18); border-radius: 999px; color: #7b878c; background: rgba(255,255,255,.58); cursor: pointer; font: 600 10px/1 sans-serif; letter-spacing: .08em; transition: color .25s ease, border-color .25s ease, background .25s ease, transform .25s ease; }
+.resource-toolbar button:hover { transform: translateY(-1px); border-color: rgba(164,94,114,.36); color: var(--pink-deep); }
+.resource-toolbar button.is-active { border-color: #b97b8d; color: #fff; background: #b97b8d; box-shadow: 0 7px 18px rgba(164,94,114,.16); }
 .resource-grid { width: min(1500px, 100%); margin: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 2vw, 26px); }
 .resource-card { min-width: 0; overflow: hidden; border: 1px solid rgba(70,82,88,.12); border-radius: 22px; background: rgba(255,255,255,.9); box-shadow: 0 12px 32px rgba(15,23,42,.06); opacity: 0; animation: card-rise .8s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: var(--card-delay); transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease; }
 .resource-card:hover { transform: translateY(-5px); box-shadow: 0 18px 42px rgba(15,23,42,.1); }
@@ -467,8 +471,15 @@ footer > div { display: flex; justify-content: space-between; gap: 18px; color: 
 .resource-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 13px; }
 .resource-card-meta span { display: inline-flex; min-height: 23px; align-items: center; justify-content: center; padding: 0 10px; border-radius: 8px; color: #8f6070; background: #f5e7eb; font-size: 10px; font-weight: 600; letter-spacing: .06em; }
 .resource-card-meta span:last-child { color: #60747a; background: #eaf0f0; }
-.resource-link { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); color: #57686e; font: 600 10px/1 sans-serif; letter-spacing: .08em; transition: color .25s ease; }
+.resource-card-actions { min-height: 39px; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.resource-link { min-width: 0; display: flex; align-items: center; justify-content: space-between; color: #57686e; font: 600 10px/1 sans-serif; letter-spacing: .08em; transition: color .25s ease; }
 .resource-link:hover { color: var(--pink-deep); }
+.like-button { min-width: 57px; height: 31px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; border: 1px solid rgba(178,122,139,.26); border-radius: 999px; color: #a87081; background: #fbf4f6; cursor: pointer; transition: color .25s ease, border-color .25s ease, background .25s ease, transform .25s ease; }
+.like-button:hover:not(:disabled) { transform: translateY(-1px) scale(1.02); border-color: #b87a8d; color: #9e566e; background: #f9e7ed; }
+.like-button > span { font-size: 16px; line-height: 1; }
+.like-button strong { min-width: 1ch; font: 700 10px/1 sans-serif; }
+.like-button.is-liked { border-color: rgba(174,91,116,.32); color: #a84f6b; background: #f7dfe6; }
+.like-button:disabled { cursor: default; }
 
 /* Owner editor */
 .manage-page { min-height: 100svh; background: var(--paper-soft); }
@@ -611,10 +622,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   .turntable { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.15); }
   .doujin-hero { min-height: 430px; padding: 120px 22px 45px; }
   .resource-section { padding: 34px 14px 80px; }
+  .resource-toolbar { margin-bottom: 14px; }
   .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
   .resource-card { border-radius: 15px; }
   .resource-card-body { padding: 12px 11px 13px; }
   .resource-card-meta span { padding: 0 7px; font-size: 9px; }
+  .resource-card-actions { gap: 7px; }
+  .like-button { min-width: 52px; padding: 0 8px; }
   .manage-hero { min-height: 390px; padding: 120px 22px 45px; }
   .editor-section { padding: 58px 16px 85px; gap: 35px; }
   .editor-form { grid-template-columns: 1fr; padding: 22px 17px; border-radius: 20px; }

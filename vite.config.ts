@@ -54,6 +54,11 @@ export default defineConfig(async () => {
   }
 
   return {
+    build: {
+      rolldownOptions: {
+        external: ["cloudflare:workers"],
+      },
+    },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
