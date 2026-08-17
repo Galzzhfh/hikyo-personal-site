@@ -40,10 +40,10 @@ export default defineConfig(async () => {
   process.env.WRANGLER_LOG_PATH ??= ".wrangler/logs";
   process.env.MINIFLARE_REGISTRY_PATH ??= ".wrangler/registry";
 
-  // Worker bindings are used by Sites deployments, while Windows previews and
-  // GitHub Pages builds only need the static export.
+  // Workerd currently exits with a libuv assertion after a successful static
+  // export on Windows. GitHub Pages builds on Linux, where the adapter is kept.
   const platformPlugins = [];
-  if (process.platform !== "win32" && process.env.GITHUB_PAGES !== "true") {
+  if (process.platform !== "win32") {
     const { cloudflare } = await import("@cloudflare/vite-plugin");
     platformPlugins.push(
       cloudflare({
@@ -54,11 +54,6 @@ export default defineConfig(async () => {
   }
 
   return {
-    build: {
-      rolldownOptions: {
-        external: ["cloudflare:workers"],
-      },
-    },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

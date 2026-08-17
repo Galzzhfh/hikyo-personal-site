@@ -33,15 +33,15 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
     assert.match(html, new RegExp(`${pagesBasePath}/_next/`));
     assert.match(html, new RegExp(`${pagesBasePath}/cg/scene-01/00000001\\.webp`));
     assert.match(html, new RegExp(`${pagesBasePath}/cg/scene-02/00000336\\.webp`));
-    assert.match(html, new RegExp(`${pagesBasePath}/music`));
+    assert.match(html, /href="#music"/);
     assert.doesNotMatch(html, new RegExp(`href="${pagesBasePath}/(?:doujin|music|manage)/"`));
     assert.doesNotMatch(html, /(?<![A-Za-z0-9_-])\/_next\//);
     assert.doesNotMatch(html, /src="\/cg\//);
   }
 });
 
-test("music room is exported as a dedicated playable page", async () => {
-  const html = await readFile(new URL("music.html", clientUrl), "utf8");
+test("music room stays mounted inside the public app", async () => {
+  const html = await readFile(new URL("index.html", clientUrl), "utf8");
 
   assert.match(html, /音楽室/);
   assert.match(html, /光ある場所へ/);
@@ -53,30 +53,23 @@ test("music room is exported as a dedicated playable page", async () => {
   assert.doesNotMatch(html, /触碰唱片|在网易云打开|播放这张唱片/);
 });
 
-test("doujin recommendations are exported as a dedicated resource grid", async () => {
-  const html = await readFile(new URL("doujin.html", clientUrl), "utf8");
+test("doujin recommendations are rendered as openable cards without likes or sorting", async () => {
+  const [html, gallery, postsSource] = await Promise.all([
+    readFile(new URL("index.html", clientUrl), "utf8"),
+    readFile(new URL("../app/doujin/DoujinGallery.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../content/doujin-posts.json", import.meta.url), "utf8"),
+  ]);
+  const posts = JSON.parse(postsSource);
 
   assert.match(html, /同人誌の.*おすすめ/s);
   assert.match(html, /resource-grid/);
-  assert.match(html, /resource-toolbar/);
-  assert.match(html, /最多赞/);
-  assert.match(html, /静かな午後/);
-  assert.match(html, /好きなままに/);
+  for (const post of posts) assert.match(html, new RegExp(post.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(html, /owner-entry/);
+  assert.match(gallery, /setSelectedPost/);
+  assert.match(gallery, /role="dialog"/);
+  assert.match(gallery, /aria-label={`打开 \${item.title}`}/);
+  assert.doesNotMatch(gallery, /like|sortMode|hikyo-doujin-device/i);
   assert.doesNotMatch(html, />管理投稿</);
-});
-
-test("doujin gallery supports persistent one-device likes and sorting", async () => {
-  const [gallery, route, schema] = await Promise.all([
-    readFile(new URL("../app/doujin/DoujinGallery.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/api/doujin-likes/route.ts", import.meta.url), "utf8"),
-    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
-  ]);
-
-  assert.match(gallery, /hikyo-doujin-device-v1/);
-  assert.match(gallery, /sortMode === "likes"/);
-  assert.match(route, /onConflictDoNothing/);
-  assert.match(schema, /doujin_likes_post_device_pk/);
 });
 
 test("owner editor is exported without embedding credentials", async () => {
@@ -138,16 +131,19 @@ test("starter preview files are removed", async () => {
   await assert.rejects(access(new URL("../app/_sites-preview", import.meta.url)));
 });
 
-test("GitHub Pages navigation uses native links", async () => {
-  const routeSources = await Promise.all([
-    "../app/page.tsx",
-    "../app/doujin/page.tsx",
-    "../app/music/page.tsx",
-    "../app/manage/page.tsx",
-    "../app/manage/music/page.tsx",
-  ].map((route) => readFile(new URL(route, import.meta.url), "utf8")));
+test("public navigation uses hash views so the music provider is not reloaded", async () => {
+  const [publicApp, doujinRoute, musicRoute] = await Promise.all([
+    readFile(new URL("../app/components/PublicApp.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/doujin/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/music/page.tsx", import.meta.url), "utf8"),
+  ]);
 
-  for (const source of routeSources) {
-    assert.doesNotMatch(source, /next\/link/);
-  }
+  assert.match(publicApp, /href="#doujin"/);
+  assert.match(publicApp, /href="#music"/);
+  assert.match(publicApp, /data-public-view="home"/);
+  assert.match(publicApp, /data-public-view="doujin"/);
+  assert.match(publicApp, /data-public-view="music"/);
+  assert.match(doujinRoute, /PublicViewRedirect[^>]+view="doujin"/);
+  assert.match(musicRoute, /PublicViewRedirect[^>]+view="music"/);
+  assert.doesNotMatch(publicApp, /next\/link/);
 });

@@ -49,7 +49,6 @@ jobs:
           fi
           echo "PAGES_BASE_PATH=$base_path" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_SITE_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io${base_path}/" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_LIKES_API_URL=https://hanasuki-archive.zzh404cc7894561230.chatgpt.site/api/doujin-likes" >> "$GITHUB_ENV"
 
       - name: Build static site
         run: pnpm build
