@@ -3,14 +3,15 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-
-const songId = "1367154014";
-const songUrl = `https://music.163.com/song/media/outer/url?id=${songId}.mp3`;
+import type { MusicTrack } from "../../lib/music";
 
 type MusicContextValue = {
   isPlaying: boolean;
   hasStarted: boolean;
+  tracks: MusicTrack[];
+  currentTrack: MusicTrack | null;
   toggle: () => Promise<void>;
+  playTrack: (trackId: string) => Promise<void>;
 };
 
 const MusicContext = createContext<MusicContextValue | null>(null);
@@ -21,10 +22,13 @@ export function useMusic() {
   return context;
 }
 
-export default function MusicProvider({ children, basePath }: { children: ReactNode; basePath: string }) {
+export default function MusicProvider({ children, basePath, tracks }: { children: ReactNode; basePath: string; tracks: MusicTrack[] }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const pendingPlayRef = useRef(false);
+  const [currentTrackId, setCurrentTrackId] = useState<string | null>(tracks[0]?.id ?? null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? tracks[0] ?? null;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -38,6 +42,17 @@ export default function MusicProvider({ children, basePath }: { children: ReactN
       audio.removeEventListener("pause", handlePause);
     };
   }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack || !pendingPlayRef.current) return;
+    pendingPlayRef.current = false;
+    audio.load();
+    audio.play().catch(() => {
+      setIsPlaying(false);
+      setHasStarted(false);
+    });
+  }, [currentTrack]);
 
   async function toggle() {
     const audio = audioRef.current;
@@ -55,17 +70,28 @@ export default function MusicProvider({ children, basePath }: { children: ReactN
     }
   }
 
+  async function playTrack(trackId: string) {
+    if (!tracks.some((track) => track.id === trackId)) return;
+    if (currentTrack?.id === trackId) {
+      await toggle();
+      return;
+    }
+    pendingPlayRef.current = true;
+    setHasStarted(true);
+    setCurrentTrackId(trackId);
+  }
+
   return (
-    <MusicContext.Provider value={{ isPlaying, hasStarted, toggle }}>
+    <MusicContext.Provider value={{ isPlaying, hasStarted, tracks, currentTrack, toggle, playTrack }}>
       {children}
       {/* Instrumental audio has no spoken content to caption. */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <audio ref={audioRef} src={songUrl} preload="metadata" loop />
+      <audio ref={audioRef} src={currentTrack ? `https://music.163.com/song/media/outer/url?id=${currentTrack.songId}.mp3` : undefined} preload="metadata" loop />
       <aside className={`global-player ${hasStarted ? "is-visible" : ""}`} aria-label="持续音乐播放器" aria-hidden={!hasStarted}>
         <button className={`global-vinyl ${isPlaying ? "is-playing" : ""}`} type="button" onClick={toggle} aria-label={isPlaying ? "暂停" : "播放"}>
-          <img src={`${basePath}/song-cover.jpg`} alt="" />
+          {currentTrack ? <img src={`${basePath}/${currentTrack.cover}`} alt="" /> : null}
         </button>
-        <div><strong>光ある場所へ</strong><span>忍</span></div>
+        <div><strong>{currentTrack?.title ?? ""}</strong><span>{currentTrack?.artist ?? ""}</span></div>
         <button className="global-toggle" type="button" onClick={toggle} aria-label={isPlaying ? "暂停" : "播放"}>{isPlaying ? "Ⅱ" : "▶"}</button>
       </aside>
     </MusicContext.Provider>

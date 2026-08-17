@@ -23,7 +23,7 @@ export default function MusicPage() {
         <nav aria-label="主导航">
           <a href={`${basePath}/`}>首页</a><a href={`${basePath}/doujin`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
         </nav>
-        <a className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></a>
+        <a className="owner-entry" href={`${basePath}/manage/music`} aria-label="站主管理">✦</a>
       </header>
       <section className="music-stage">
         <CgBackdrop />

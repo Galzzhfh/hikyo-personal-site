@@ -32,7 +32,7 @@ export default function Home() {
           <p className="eyebrow"><span /> PERSONAL ANIME ARCHIVE</p>
           <h1>無聊中<br /><em>寻觅快乐</em></h1>
           <p className="hero-intro">
-            动画、游戏、同人誌与纯音乐。<br />把偶然遇见的快乐，慢慢收进这里。
+            动画、游戏、同人誌与纯音乐
           </p>
           <div className="hero-actions">
             <a className="primary-action" href={`${basePath}/doujin`}>本子推荐 <span>→</span></a>

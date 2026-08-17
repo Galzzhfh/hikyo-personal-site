@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import MusicProvider from "./components/MusicProvider";
+import tracksData from "../content/music-tracks.json";
+import type { MusicTrack } from "../lib/music";
 import "./globals.css";
 
 const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -33,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="zh-CN">
-      <body><MusicProvider basePath={basePath}>{children}</MusicProvider></body>
+      <body><MusicProvider basePath={basePath} tracks={tracksData as MusicTrack[]}>{children}</MusicProvider></body>
     </html>
   );
 }

@@ -5,7 +5,7 @@
 import { useMusic } from "../components/MusicProvider";
 
 export default function MusicPlayer({ basePath }: { basePath: string }) {
-  const { isPlaying, toggle } = useMusic();
+  const { isPlaying, toggle, tracks, currentTrack, playTrack } = useMusic();
 
   return (
     <div className="player-shell netease-player-shell">
@@ -13,7 +13,7 @@ export default function MusicPlayer({ basePath }: { basePath: string }) {
         <button className="record-button" type="button" onClick={toggle} aria-label={isPlaying ? "暂停音乐" : "播放音乐"}>
           <span className="vinyl">
             <span className="vinyl-label">
-              <img src={`${basePath}/song-cover.jpg`} alt="光ある場所へ 专辑封面" />
+              {currentTrack ? <img src={`${basePath}/${currentTrack.cover}`} alt={`${currentTrack.title} 专辑封面`} /> : <span>♪</span>}
             </span>
           </span>
         </button>
@@ -23,12 +23,19 @@ export default function MusicPlayer({ basePath }: { basePath: string }) {
       <div className="player-panel">
         <div className="track-meta">
           <p>NOW PLAYING</p>
-          <h2>光ある場所へ</h2>
-          <span>忍</span>
+          <h2>{currentTrack?.title ?? "暂无曲目"}</h2>
+          <span>{currentTrack?.artist ?? ""}</span>
         </div>
 
         <div className="record-control">
-          <button type="button" onClick={toggle} aria-label={isPlaying ? "暂停音乐" : "播放音乐"}>{isPlaying ? "Ⅱ" : "▶"}</button>
+          <button type="button" onClick={toggle} disabled={!currentTrack} aria-label={isPlaying ? "暂停音乐" : "播放音乐"}>{isPlaying ? "Ⅱ" : "▶"}</button>
+        </div>
+        <div className="track-list" aria-label="曲目列表">
+          {tracks.map((track, index) => (
+            <button className={currentTrack?.id === track.id ? "is-current" : ""} type="button" key={track.id} onClick={() => playTrack(track.id)}>
+              <span>{String(index + 1).padStart(2, "0")}</span><strong>{track.title}</strong><small>{track.artist}</small>
+            </button>
+          ))}
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function ManagePage() {
         <nav aria-label="主导航">
           <a href={`${basePath}/`}>首页</a>
           <a href={`${basePath}/doujin`}>本子推荐</a>
-          <a href={`${basePath}/music`}>音乐</a>
+          <a href={`${basePath}/manage/music`}>音乐管理</a>
         </nav>
         <a className="header-button" href={`${basePath}/doujin`}>返回推荐 <span>↗</span></a>
       </header>

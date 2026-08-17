@@ -30,7 +30,7 @@ export default function DoujinPage() {
           <a href={`${basePath}/music`}>音乐</a>
           <a href={`${basePath}/#about`}>关于</a>
         </nav>
-        <a className="header-button" href={`${basePath}/manage`}>管理投稿 <span>＋</span></a>
+        <a className="owner-entry" href={`${basePath}/manage`} aria-label="站主管理">✦</a>
       </header>
 
       <section className="doujin-hero">

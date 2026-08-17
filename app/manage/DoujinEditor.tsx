@@ -4,23 +4,19 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { DoujinPost } from "../../lib/doujin";
-
-const repository = "Galzzhfh/hikyo-personal-site";
-const branch = "main";
-const apiBase = "https://api.github.com";
+import {
+  commitRepositoryFiles,
+  readRepositoryJson,
+  safeImageExtension,
+  verifyOwner as verifyGitHubOwner,
+  type RepositoryMutation,
+} from "../../lib/github-owner";
 
 type EditorProps = {
   initialPosts: DoujinPost[];
   basePath: string;
 };
 
-type GitRef = { object: { sha: string } };
-type GitCommit = { tree: { sha: string } };
-type GitObject = { sha: string };
-type GitHubUser = { login: string };
-type GitHubContent = { content: string; encoding: string };
-type GitHubError = { message?: string };
-type GitTreeEntry = { path: string; mode: "100644"; type: "blob"; sha: string };
 type EditorStatus = "idle" | "checking" | "ready" | "publishing" | "success" | "error";
 
 const initialForm = {
@@ -30,47 +26,6 @@ const initialForm = {
   tags: "同人誌",
   sourceUrl: "",
 };
-
-function bytesToBase64(bytes: Uint8Array) {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  }
-  return btoa(binary);
-}
-
-function textToBase64(value: string) {
-  return bytesToBase64(new TextEncoder().encode(value));
-}
-
-function base64ToText(value: string) {
-  const binary = atob(value.replace(/\s/g, ""));
-  return new TextDecoder().decode(Uint8Array.from(binary, (character) => character.charCodeAt(0)));
-}
-
-async function githubRequest<T>(path: string, token: string, init: RequestInit = {}) {
-  const headers = new Headers(init.headers);
-  headers.set("Accept", "application/vnd.github+json");
-  headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
-  headers.set("X-GitHub-Api-Version", "2022-11-28");
-  const response = await fetch(`${apiBase}${path}`, { ...init, headers });
-  const data = await response.json() as T & GitHubError;
-  if (!response.ok) throw new Error(data.message || `GitHub 请求失败（${response.status}）`);
-  return data;
-}
-
-function decodePosts(content: GitHubContent, fallback: DoujinPost[]) {
-  return content.encoding === "base64"
-    ? JSON.parse(base64ToText(content.content)) as DoujinPost[]
-    : fallback;
-}
-
-function safeExtension(file: File) {
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  return extension && ["jpg", "jpeg", "png", "webp", "gif"].includes(extension) ? extension : "jpg";
-}
 
 export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
   const [posts, setPosts] = useState(initialPosts);
@@ -121,10 +76,8 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
     setMessage("正在验证站主身份…");
     try {
       const cleanToken = token.trim();
-      const user = await githubRequest<GitHubUser>("/user", cleanToken);
-      if (user.login.toLowerCase() !== "galzzhfh") throw new Error("仅 Galzzhfh 可以进入投稿管理。");
-      const currentContent = await githubRequest<GitHubContent>(`/repos/${repository}/contents/content/doujin-posts.json?ref=${branch}`, cleanToken);
-      setPosts(decodePosts(currentContent, posts));
+      await verifyGitHubOwner(cleanToken);
+      setPosts(await readRepositoryJson("content/doujin-posts.json", cleanToken, posts));
       setAuthorized(true);
       setStatus("ready");
       setMessage("");
@@ -154,22 +107,14 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
 
     try {
       const cleanToken = token.trim();
-      const user = await githubRequest<GitHubUser>("/user", cleanToken);
-      if (user.login.toLowerCase() !== "galzzhfh") throw new Error("站主身份已失效，请重新验证。");
-
-      const reference = await githubRequest<GitRef>(`/repos/${repository}/git/ref/heads/${branch}`, cleanToken);
-      const [parent, currentContent] = await Promise.all([
-        githubRequest<GitCommit>(`/repos/${repository}/git/commits/${reference.object.sha}`, cleanToken),
-        githubRequest<GitHubContent>(`/repos/${repository}/contents/content/doujin-posts.json?ref=${branch}`, cleanToken),
-      ]);
-      const currentPosts = decodePosts(currentContent, posts);
+      const currentPosts = await readRepositoryJson("content/doujin-posts.json", cleanToken, posts);
       const existingPost = editingId ? currentPosts.find((post) => post.id === editingId) : undefined;
       if (editingId && !existingPost) throw new Error("没有找到要修改的投稿，请刷新后重试。");
 
       const now = new Date();
       const id = editingId || `post-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${now.getTime().toString(36)}`;
       const coverPath = cover
-        ? `doujin/${id}-${now.getTime().toString(36)}.${safeExtension(cover)}`
+        ? `doujin/${id}-${now.getTime().toString(36)}.${safeImageExtension(cover)}`
         : existingPost!.cover;
       const nextPost: DoujinPost = {
         id,
@@ -184,39 +129,16 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       const nextPosts = editingId
         ? currentPosts.map((post) => post.id === editingId ? nextPost : post)
         : [nextPost, ...currentPosts];
-
-      const contentBlob = await githubRequest<GitObject>(`/repos/${repository}/git/blobs`, cleanToken, {
-        method: "POST",
-        body: JSON.stringify({ content: textToBase64(JSON.stringify(nextPosts, null, 2) + "\n"), encoding: "base64" }),
-      });
-      const treeEntries: GitTreeEntry[] = [
-        { path: "content/doujin-posts.json", mode: "100644", type: "blob", sha: contentBlob.sha },
+      const mutations: RepositoryMutation[] = [
+        { path: "content/doujin-posts.json", content: JSON.stringify(nextPosts, null, 2) + "\n" },
       ];
-
       if (cover) {
-        const coverBlob = await githubRequest<GitObject>(`/repos/${repository}/git/blobs`, cleanToken, {
-          method: "POST",
-          body: JSON.stringify({ content: bytesToBase64(new Uint8Array(await cover.arrayBuffer())), encoding: "base64" }),
-        });
-        treeEntries.unshift({ path: `public/${coverPath}`, mode: "100644", type: "blob", sha: coverBlob.sha });
+        mutations.unshift({ path: `public/${coverPath}`, content: new Uint8Array(await cover.arrayBuffer()) });
+        if (existingPost?.cover.startsWith("doujin/") && existingPost.cover !== coverPath) {
+          mutations.push({ path: `public/${existingPost.cover}`, delete: true });
+        }
       }
-
-      const tree = await githubRequest<GitObject>(`/repos/${repository}/git/trees`, cleanToken, {
-        method: "POST",
-        body: JSON.stringify({ base_tree: parent.tree.sha, tree: treeEntries }),
-      });
-      const commit = await githubRequest<GitObject>(`/repos/${repository}/git/commits`, cleanToken, {
-        method: "POST",
-        body: JSON.stringify({
-          message: `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`,
-          tree: tree.sha,
-          parents: [reference.object.sha],
-        }),
-      });
-      await githubRequest<GitObject>(`/repos/${repository}/git/refs/heads/${branch}`, cleanToken, {
-        method: "PATCH",
-        body: JSON.stringify({ sha: commit.sha, force: false }),
-      });
+      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`, mutations);
 
       setPosts(nextPosts);
       setStatus("success");
@@ -228,16 +150,41 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
     }
   }
 
+  async function deletePost(post: DoujinPost) {
+    if (!authorized || !token.trim() || !window.confirm(`确定删除「${post.title}」吗？`)) return;
+    setStatus("publishing");
+    setMessage("正在删除投稿…");
+    try {
+      const cleanToken = token.trim();
+      const currentPosts = await readRepositoryJson("content/doujin-posts.json", cleanToken, posts);
+      const target = currentPosts.find((item) => item.id === post.id);
+      if (!target) throw new Error("没有找到要删除的投稿，请刷新后重试。");
+      const nextPosts = currentPosts.filter((item) => item.id !== post.id);
+      const mutations: RepositoryMutation[] = [
+        { path: "content/doujin-posts.json", content: JSON.stringify(nextPosts, null, 2) + "\n" },
+      ];
+      if (target.cover.startsWith("doujin/")) mutations.push({ path: `public/${target.cover}`, delete: true });
+      await commitRepositoryFiles(cleanToken, `Delete doujin post: ${target.title}`, mutations);
+      setPosts(nextPosts);
+      clearForm();
+      setStatus("success");
+      setMessage("投稿已删除，网站会自动更新。");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "删除失败，请稍后重试。");
+    }
+  }
+
   return (
     <section className="editor-section" aria-label="同人誌投稿编辑器">
       <div className="editor-copy">
         <p className="section-index">01 / OWNER ONLY</p>
         <h2>投稿管理<small>お気に入りを編集する</small></h2>
-        <p>只有站主账号验证通过后，才能新增或修改内容。</p>
+        <p>只有站主账号验证通过后，才能新增、修改或删除内容。</p>
         <div className="token-note">
           <strong>GitHub 权限</strong>
-          <p>使用仅限本仓库、Contents 读写权限的精细令牌。令牌只在当前页面使用，不会保存。</p>
-          <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">创建令牌 <span>↗</span></a>
+          <p>Resource owner 选择 Galzzhfh，仓库选择 hikyo-personal-site，Contents 设为 Read and write。令牌不会保存。</p>
+          <a href="https://github.com/settings/personal-access-tokens/new?name=Hikyo%20Site%20Editor&amp;target_name=Galzzhfh&amp;contents=write" target="_blank" rel="noreferrer">创建令牌 <span>↗</span></a>
         </div>
       </div>
 
@@ -308,6 +255,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
 
             <div className="publish-row field-wide">
               <button type="submit" disabled={status === "publishing"}>{status === "publishing" ? "保存中…" : editingId ? "保存修改" : "发布投稿"}<span>→</span></button>
+              {editingPost ? <button className="delete-button" type="button" disabled={status === "publishing"} onClick={() => deletePost(editingPost)}>删除投稿</button> : null}
               <p className={`publish-status is-${status}`} role="status">{message}</p>
             </div>
           </form>

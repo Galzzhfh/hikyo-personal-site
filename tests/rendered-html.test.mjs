@@ -19,6 +19,8 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
   assert.match(html, /global-player/);
   assert.match(html, /1367154014/);
   assert.match(html, /希望快乐/);
+  assert.match(html, /动画、游戏、同人誌与纯音乐/);
+  assert.doesNotMatch(html, /把偶然遇见的快乐|纯音乐。/);
   assert.doesNotMatch(html, /视觉主题|本站状态|缓慢生长中/);
   assert.doesNotMatch(html, /现在先用三个位置看看版式/);
   assert.doesNotMatch(html, /花隙/);
@@ -45,6 +47,8 @@ test("music room is exported as a dedicated playable page", async () => {
   assert.match(html, /光ある場所へ/);
   assert.match(html, /song-cover\.jpg/);
   assert.match(html, /1367154014/);
+  assert.match(html, /track-list/);
+  assert.match(html, /owner-entry/);
   assert.doesNotMatch(html, /<iframe/);
   assert.doesNotMatch(html, /触碰唱片|在网易云打开|播放这张唱片/);
 });
@@ -56,7 +60,8 @@ test("doujin recommendations are exported as a dedicated resource grid", async (
   assert.match(html, /resource-grid/);
   assert.match(html, /光が差す部屋/);
   assert.match(html, /好きなままに/);
-  assert.match(html, /管理投稿/);
+  assert.match(html, /owner-entry/);
+  assert.doesNotMatch(html, />管理投稿</);
 });
 
 test("owner editor is exported without embedding credentials", async () => {
@@ -67,6 +72,23 @@ test("owner editor is exported without embedding credentials", async () => {
   assert.match(html, /站主验证/);
   assert.match(html, /进入管理/);
   assert.doesNotMatch(html, /github_pat_[A-Za-z0-9_]+/);
+});
+
+test("music editor is exported for owner-only track management", async () => {
+  const html = await readFile(new URL("manage/music.html", clientUrl), "utf8");
+  const editorSource = await readFile(new URL("../app/manage/music/MusicEditor.tsx", import.meta.url), "utf8");
+
+  assert.match(html, /音乐管理/);
+  assert.match(html, /站主验证/);
+  assert.match(editorSource, /deleteTrack/);
+  assert.match(editorSource, /删除曲目/);
+  assert.doesNotMatch(html, /github_pat_[A-Za-z0-9_]+/);
+});
+
+test("doujin editor supports deleting posts", async () => {
+  const editorSource = await readFile(new URL("../app/manage/DoujinEditor.tsx", import.meta.url), "utf8");
+  assert.match(editorSource, /deletePost/);
+  assert.match(editorSource, /删除投稿/);
 });
 
 test("all visual assets are included in the export", async () => {
@@ -94,6 +116,7 @@ test("GitHub Pages navigation uses native links", async () => {
     "../app/doujin/page.tsx",
     "../app/music/page.tsx",
     "../app/manage/page.tsx",
+    "../app/manage/music/page.tsx",
   ].map((route) => readFile(new URL(route, import.meta.url), "utf8")));
 
   for (const source of routeSources) {
