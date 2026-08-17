@@ -44,6 +44,9 @@ export async function githubRequest<T>(path: string, token: string, init: Reques
     if (response.status === 403 && data.message?.includes("Resource not accessible by personal access token")) {
       throw permissionError();
     }
+    if (response.status === 422 && data.message?.includes("Update is not a fast forward")) {
+      throw new Error("页面刚刚已经提交过一次，或分支已更新。请刷新页面确认最新内容后再试。");
+    }
     throw new Error(data.message || `GitHub 请求失败（${response.status}）`);
   }
   return data;

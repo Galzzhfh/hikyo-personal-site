@@ -89,6 +89,19 @@ test("doujin editor supports deleting posts", async () => {
   const editorSource = await readFile(new URL("../app/manage/DoujinEditor.tsx", import.meta.url), "utf8");
   assert.match(editorSource, /deletePost/);
   assert.match(editorSource, /删除投稿/);
+  assert.match(editorSource, /operationInFlightRef/);
+});
+
+test("owner editors prevent duplicate GitHub submissions", async () => {
+  const [doujinEditor, musicEditor, githubClient] = await Promise.all([
+    readFile(new URL("../app/manage/DoujinEditor.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/manage/music/MusicEditor.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/github-owner.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(doujinEditor, /operationInFlightRef\.current/);
+  assert.match(musicEditor, /operationInFlightRef\.current/);
+  assert.match(githubClient, /Update is not a fast forward/);
 });
 
 test("all visual assets are included in the export", async () => {

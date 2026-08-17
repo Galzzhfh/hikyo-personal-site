@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   commitRepositoryFiles,
   readRepositoryJson,
@@ -28,6 +28,7 @@ function parseSongId(value: string) {
 }
 
 export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
+  const operationInFlightRef = useRef(false);
   const [tracks, setTracks] = useState(initialTracks);
   const [token, setToken] = useState("");
   const [authorized, setAuthorized] = useState(false);
@@ -100,6 +101,8 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
       setMessage("封面图片请控制在 8 MB 以内。");
       return;
     }
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
 
     setStatus("publishing");
     setMessage(editingId ? "正在保存修改…" : "正在添加曲目…");
@@ -141,11 +144,15 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "保存失败，请稍后重试。");
+    } finally {
+      operationInFlightRef.current = false;
     }
   }
 
   async function deleteTrack(track: MusicTrack) {
     if (!authorized || !token.trim() || !window.confirm(`确定删除「${track.title}」吗？`)) return;
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
     setStatus("publishing");
     setMessage("正在删除曲目…");
     try {
@@ -166,6 +173,8 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "删除失败，请稍后重试。");
+    } finally {
+      operationInFlightRef.current = false;
     }
   }
 
