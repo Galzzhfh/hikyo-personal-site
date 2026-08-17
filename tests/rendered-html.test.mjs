@@ -26,6 +26,7 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
     assert.match(html, new RegExp(`${pagesBasePath}/_next/`));
     assert.match(html, new RegExp(`${pagesBasePath}/cg/scene-01/00000001\\.webp`));
     assert.match(html, new RegExp(`${pagesBasePath}/music`));
+    assert.doesNotMatch(html, new RegExp(`href="${pagesBasePath}/(?:doujin|music|manage)/"`));
     assert.doesNotMatch(html, /(?<![A-Za-z0-9_-])\/_next\//);
     assert.doesNotMatch(html, /src="\/cg\//);
   }

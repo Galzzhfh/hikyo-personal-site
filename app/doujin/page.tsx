@@ -27,10 +27,10 @@ export default function DoujinPage() {
         <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
         <nav aria-label="主导航">
           <a href={`${basePath}/`}>首页</a>
-          <a href={`${basePath}/music/`}>音乐</a>
+          <a href={`${basePath}/music`}>音乐</a>
           <a href={`${basePath}/#about`}>关于</a>
         </nav>
-        <a className="header-button" href={`${basePath}/manage/`}>管理投稿 <span>＋</span></a>
+        <a className="header-button" href={`${basePath}/manage`}>管理投稿 <span>＋</span></a>
       </header>
 
       <section className="doujin-hero">

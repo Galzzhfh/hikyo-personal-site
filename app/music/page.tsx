@@ -21,7 +21,7 @@ export default function MusicPage() {
       <header className="site-header music-header">
         <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
         <nav aria-label="主导航">
-          <a href={`${basePath}/`}>首页</a><a href={`${basePath}/doujin/`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
+          <a href={`${basePath}/`}>首页</a><a href={`${basePath}/doujin`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
         </nav>
         <a className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></a>
       </header>
