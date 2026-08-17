@@ -3,11 +3,11 @@
 import { useSyncExternalStore } from "react";
 
 const quotes = [
-  { text: "真相永远只有一个。", source: "名侦探柯南" },
-  { text: "人的梦想，是不会结束的。", source: "海贼王" },
-  { text: "只要有想见的人，就不再是孤单一人。", source: "夏目友人帐" },
-  { text: "正因为不会发生，所以才叫奇迹。", source: "Kanon" },
-  { text: "无论何时，都不要忘记微笑。", source: "二次元语录" },
+  "真実はいつもひとつ。",
+  "人の夢は、終わらねぇ。",
+  "会いたい人がいるなら、もう一人じゃない。",
+  "起こらないから、奇跡って言うんですよ。",
+  "どんな時でも、笑顔を忘れないで。",
 ];
 
 let clientQuoteIndex: number | undefined;
@@ -31,8 +31,7 @@ export default function AnimeQuote() {
 
   return (
     <p className="anime-quote">
-      <span>「{quote.text}」</span>
-      <small>—— {quote.source}</small>
+      <span>「{quote}」</span>
     </p>
   );
 }

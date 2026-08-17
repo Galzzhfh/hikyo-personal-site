@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import CgBackdrop from "../components/CgBackdrop";
 import SakuraFall from "../components/SakuraFall";
 import postsData from "../../content/doujin-posts.json";
@@ -20,13 +21,13 @@ export default function ManagePage() {
     <main className="manage-page">
       <SakuraFall />
       <header className="site-header manage-header">
-        <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
+        <Link className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></Link>
         <nav aria-label="主导航">
-          <a href={`${basePath}/`}>首页</a>
-          <a href={`${basePath}/doujin`}>本子推荐</a>
-          <a href={`${basePath}/music`}>音乐</a>
+          <Link href={`${basePath}/`}>首页</Link>
+          <Link href={`${basePath}/doujin`}>本子推荐</Link>
+          <Link href={`${basePath}/music`}>音乐</Link>
         </nav>
-        <a className="header-button" href={`${basePath}/doujin`}>返回推荐 <span>↗</span></a>
+        <Link className="header-button" href={`${basePath}/doujin`}>返回推荐 <span>↗</span></Link>
       </header>
 
       <section className="manage-hero">
@@ -38,7 +39,7 @@ export default function ManagePage() {
         </div>
       </section>
 
-      <DoujinEditor initialPosts={postsData as DoujinPost[]} />
+      <DoujinEditor initialPosts={postsData as DoujinPost[]} basePath={basePath} />
     </main>
   );
 }

@@ -3,6 +3,8 @@
 import CgBackdrop from "./components/CgBackdrop";
 import SakuraFall from "./components/SakuraFall";
 import AnimeQuote from "./components/AnimeQuote";
+import HomeMusicButton from "./components/HomeMusicButton";
+import Link from "next/link";
 
 export default function Home() {
   const basePath = process.env.PAGES_BASE_PATH ?? "";
@@ -16,11 +18,11 @@ export default function Home() {
           秘境<small>ひきょう</small>
         </a>
         <nav aria-label="主导航">
-          <a href={`${basePath}/doujin`}>本子推荐</a>
-          <a href={`${basePath}/music`}>音乐</a>
+          <Link href={`${basePath}/doujin`}>本子推荐</Link>
+          <Link href={`${basePath}/music`}>音乐</Link>
           <a href="#about">关于</a>
         </nav>
-        <a className="header-button" href={`${basePath}/music`}>音乐室 <span>♪</span></a>
+        <Link className="header-button" href={`${basePath}/music`}>音乐室 <span>♪</span></Link>
       </header>
 
       <section className="hero" id="top">
@@ -34,8 +36,8 @@ export default function Home() {
             动画、游戏、同人誌与纯音乐。<br />把偶然遇见的快乐，慢慢收进这里。
           </p>
           <div className="hero-actions">
-            <a className="primary-action" href={`${basePath}/doujin`}>本子推荐 <span>→</span></a>
-            <a className="secondary-action" href={`${basePath}/music`}>播放音乐 <span>♪</span></a>
+            <Link className="primary-action" href={`${basePath}/doujin`}>本子推荐 <span>→</span></Link>
+            <Link className="secondary-action" href={`${basePath}/music`}>播放音乐 <span>♪</span></Link>
           </div>
         </div>
 
@@ -53,46 +55,35 @@ export default function Home() {
           <p className="section-index">01 / DOUJIN PICKS</p>
           <h2>同人誌の<br />おすすめ</h2>
           <div>
-            <a className="outline-button" href={`${basePath}/doujin`}>推荐を見る <span>→</span></a>
+            <Link className="outline-button" href={`${basePath}/doujin`}>推荐を見る <span>→</span></Link>
           </div>
         </div>
 
         <div className="pick-grid" id="pick-list">
           <article className="pick-card pick-card-main">
             <img src={`${basePath}/cg/scene-01/00000001.webp`} alt="绿植环绕的日式室内场景" />
-            <div className="pick-overlay">
-              <p>SCENERY · SAMPLE 01</p>
-              <h3>光が差す部屋</h3>
-              <span>等待写下第一篇正式推荐</span>
-            </div>
           </article>
           <article className="pick-card">
             <img src={`${basePath}/cg/scene-01/00000003.webp`} alt="夕光中的日式室内场景" loading="lazy" />
-            <div className="pick-overlay">
-              <p>ATMOSPHERE · SAMPLE 02</p>
-              <h3>夕暮れの余韻</h3>
-              <span>留给偏爱的画面与故事</span>
-            </div>
           </article>
           <article className="pick-card pick-card-note">
             <p className="vertical-copy">好きなものを、好きなままに。</p>
             <div>
               <span>ARCHIVE NOTE</span>
               <h3>楽しさを<br />探して。</h3>
-              <p>以后可以继续增加分类、标签与完整文章页。</p>
             </div>
           </article>
         </div>
       </section>
 
       <section className="music-invite" aria-label="音乐播放器入口">
-        <div className="mini-record" aria-hidden="true"><span>♪</span></div>
+        <HomeMusicButton />
         <div>
           <p className="section-index">02 / INSTRUMENTAL ROOM</p>
           <h2>音乐鉴赏<small>音楽鑑賞</small></h2>
           <AnimeQuote />
         </div>
-        <a className="light-button" href={`${basePath}/music`}>进入音乐室 <span>→</span></a>
+        <Link className="light-button" href={`${basePath}/music`}>进入音乐室 <span>→</span></Link>
       </section>
 
       <section className="motto" aria-label="网站标语">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import MusicProvider from "./components/MusicProvider";
 import "./globals.css";
 
 const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -28,9 +29,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const basePath = process.env.PAGES_BASE_PATH ?? "";
+
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body><MusicProvider basePath={basePath}>{children}</MusicProvider></body>
     </html>
   );
 }

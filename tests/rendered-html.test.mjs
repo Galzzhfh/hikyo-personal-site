@@ -15,16 +15,22 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
   assert.match(html, /同人誌の/);
   assert.match(html, /おすすめ/);
   assert.match(html, /楽しさを/);
+  assert.match(html, /真実はいつもひとつ/);
+  assert.match(html, /global-player/);
+  assert.match(html, /1367154014/);
   assert.match(html, /希望快乐/);
   assert.doesNotMatch(html, /视觉主题|本站状态|缓慢生长中/);
   assert.doesNotMatch(html, /现在先用三个位置看看版式/);
   assert.doesNotMatch(html, /花隙/);
+  assert.doesNotMatch(html, /SCENERY · SAMPLE|ATMOSPHERE · SAMPLE|以后可以继续增加分类/);
+  assert.doesNotMatch(html, /——|二次元语录|海贼王/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|taking shape/i);
 
   const pagesBasePath = process.env.PAGES_BASE_PATH ?? "";
   if (pagesBasePath) {
     assert.match(html, new RegExp(`${pagesBasePath}/_next/`));
     assert.match(html, new RegExp(`${pagesBasePath}/cg/scene-01/00000001\\.webp`));
+    assert.match(html, new RegExp(`${pagesBasePath}/cg/scene-02/00000336\\.webp`));
     assert.match(html, new RegExp(`${pagesBasePath}/music`));
     assert.doesNotMatch(html, new RegExp(`href="${pagesBasePath}/(?:doujin|music|manage)/"`));
     assert.doesNotMatch(html, /(?<![A-Za-z0-9_-])\/_next\//);
@@ -39,6 +45,7 @@ test("music room is exported as a dedicated playable page", async () => {
   assert.match(html, /光ある場所へ/);
   assert.match(html, /song-cover\.jpg/);
   assert.match(html, /1367154014/);
+  assert.doesNotMatch(html, /<iframe/);
   assert.doesNotMatch(html, /触碰唱片|在网易云打开|播放这张唱片/);
 });
 
@@ -57,7 +64,8 @@ test("owner editor is exported without embedding credentials", async () => {
 
   assert.match(html, /投稿管理/);
   assert.match(html, /GitHub 令牌/);
-  assert.match(html, /发布投稿/);
+  assert.match(html, /站主验证/);
+  assert.match(html, /进入管理/);
   assert.doesNotMatch(html, /github_pat_[A-Za-z0-9_]+/);
 });
 
@@ -71,6 +79,8 @@ test("all visual assets are included in the export", async () => {
       `cg/scene-01/${String(index + 1).padStart(8, "0")}.webp`,
       clientUrl,
     ))),
+    ...["00000336", "00000338", "00000340", "00000342", "00000344", "00000346", "00000350"]
+      .map((frame) => access(new URL(`cg/scene-02/${frame}.webp`, clientUrl))),
   ]);
 });
 

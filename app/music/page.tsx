@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import CgBackdrop from "../components/CgBackdrop";
 import SakuraFall from "../components/SakuraFall";
 import MusicPlayer from "./MusicPlayer";
@@ -19,11 +20,11 @@ export default function MusicPage() {
     <main className="music-page">
       <SakuraFall />
       <header className="site-header music-header">
-        <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
+        <Link className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></Link>
         <nav aria-label="主导航">
-          <a href={`${basePath}/`}>首页</a><a href={`${basePath}/doujin`}>本子推荐</a><a href={`${basePath}/#about`}>关于</a>
+          <Link href={`${basePath}/`}>首页</Link><Link href={`${basePath}/doujin`}>本子推荐</Link><Link href={`${basePath}/#about`}>关于</Link>
         </nav>
-        <a className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></a>
+        <Link className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></Link>
       </header>
       <section className="music-stage">
         <CgBackdrop />
@@ -32,7 +33,7 @@ export default function MusicPage() {
           <p className="eyebrow"><span /> INSTRUMENTAL ROOM</p>
           <h1>音楽室</h1>
         </div>
-        <MusicPlayer />
+        <MusicPlayer basePath={basePath} />
       </section>
     </main>
   );
