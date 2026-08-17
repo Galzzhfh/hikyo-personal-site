@@ -44,6 +44,11 @@ export default function MusicProvider({ children, basePath, tracks }: { children
   }, []);
 
   useEffect(() => {
+    document.documentElement.classList.toggle("music-is-playing", isPlaying);
+    return () => document.documentElement.classList.remove("music-is-playing");
+  }, [isPlaying]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack || !pendingPlayRef.current) return;
     pendingPlayRef.current = false;

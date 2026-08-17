@@ -25,6 +25,7 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
   assert.doesNotMatch(html, /现在先用三个位置看看版式/);
   assert.doesNotMatch(html, /花隙/);
   assert.doesNotMatch(html, /SCENERY · SAMPLE|ATMOSPHERE · SAMPLE|以后可以继续增加分类/);
+  assert.doesNotMatch(html, /CG SEQUENCE 01|光与焦点正在缓慢变化/);
   assert.doesNotMatch(html, /——|二次元语录|海贼王/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|taking shape/i);
 
@@ -41,7 +42,12 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
 });
 
 test("music room stays mounted inside the public app", async () => {
-  const html = await readFile(new URL("index.html", clientUrl), "utf8");
+  const [html, player, provider, css] = await Promise.all([
+    readFile(new URL("index.html", clientUrl), "utf8"),
+    readFile(new URL("../app/music/MusicPlayer.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/MusicProvider.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
 
   assert.match(html, /音楽室/);
   assert.match(html, /光ある場所へ/);
@@ -51,6 +57,10 @@ test("music room stays mounted inside the public app", async () => {
   assert.match(html, /owner-entry/);
   assert.doesNotMatch(html, /<iframe/);
   assert.doesNotMatch(html, /触碰唱片|在网易云打开|播放这张唱片/);
+  assert.match(player, /soft-spectrum/);
+  assert.match(provider, /music-is-playing/);
+  assert.match(css, /music-breathe/);
+  assert.match(css, /spectrum-wave/);
 });
 
 test("doujin recommendations are rendered as openable cards without likes or sorting", async () => {
@@ -67,6 +77,9 @@ test("doujin recommendations are rendered as openable cards without likes or sor
   assert.match(html, /owner-entry/);
   assert.match(gallery, /setSelectedPost/);
   assert.match(gallery, /role="dialog"/);
+  assert.match(gallery, /reader-canvas/);
+  assert.match(gallery, /ArrowLeft/);
+  assert.match(gallery, /ArrowRight/);
   assert.match(gallery, /aria-label={`打开 \${item.title}`}/);
   assert.doesNotMatch(gallery, /like|sortMode|hikyo-doujin-device/i);
   assert.doesNotMatch(html, />管理投稿</);
@@ -98,6 +111,23 @@ test("doujin editor supports deleting posts", async () => {
   assert.match(editorSource, /deletePost/);
   assert.match(editorSource, /删除投稿/);
   assert.match(editorSource, /operationInFlightRef/);
+  assert.match(editorSource, /multiple/);
+  assert.match(editorSource, /一次最多上传 20 张阅读页/);
+});
+
+test("game recommendations open preview images and completion notes", async () => {
+  const [html, gallery, gamesSource] = await Promise.all([
+    readFile(new URL("index.html", clientUrl), "utf8"),
+    readFile(new URL("../app/games/GameGallery.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../content/game-posts.json", import.meta.url), "utf8"),
+  ]);
+  const games = JSON.parse(gamesSource);
+
+  assert.match(html, /ゲームの.*おすすめ/s);
+  for (const game of games) assert.match(html, new RegExp(game.title));
+  assert.match(gallery, /game-preview-stage/);
+  assert.match(gallery, /game-thumbnails/);
+  assert.match(gallery, /selectedGame\.thoughts/);
 });
 
 test("owner editors prevent duplicate GitHub submissions", async () => {
@@ -140,12 +170,27 @@ test("public navigation uses hash views so the music provider is not reloaded", 
 
   assert.match(publicApp, /href="#doujin"/);
   assert.match(publicApp, /href="#music"/);
+  assert.match(publicApp, /href="#games"/);
   assert.match(publicApp, /data-public-view="home"/);
   assert.match(publicApp, /data-public-view="doujin"/);
   assert.match(publicApp, /data-public-view="music"/);
+  assert.match(publicApp, /data-public-view="games"/);
   assert.match(doujinRoute, /PublicViewRedirect[^>]+view="doujin"/);
   assert.match(musicRoute, /PublicViewRedirect[^>]+view="music"/);
   assert.doesNotMatch(publicApp, /next\/link/);
+});
+
+test("time theme follows the clock and can be adjusted manually", async () => {
+  const [control, css] = await Promise.all([
+    readFile(new URL("../app/components/ThemeControl.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(control, /hikyo-theme-mode/);
+  assert.match(control, /auto.*day.*night/s);
+  assert.match(control, /getHours/);
+  assert.match(css, /data-time-theme="day"/);
+  assert.match(css, /data-time-theme="night"/);
 });
 
 test("falling sakura mixes white and pink petals", async () => {

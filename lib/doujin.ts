@@ -5,6 +5,7 @@ export type DoujinPost = {
   excerpt: string;
   tags: string[];
   cover: string;
+  images?: string[];
   sourceUrl: string;
   createdAt: string;
 };

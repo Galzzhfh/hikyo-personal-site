@@ -5,30 +5,41 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import type { DoujinPost } from "../../lib/doujin";
 
+function readerImages(post: DoujinPost) {
+  return post.images?.length ? [...new Set(post.images)] : [post.cover];
+}
+
 export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]; basePath: string }) {
   const [selectedPost, setSelectedPost] = useState<DoujinPost | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const pages = selectedPost ? readerImages(selectedPost) : [];
 
   useEffect(() => {
     if (!selectedPost) return;
-    function closeOnEscape(event: KeyboardEvent) {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function closeOrTurn(event: KeyboardEvent) {
       if (event.key === "Escape") setSelectedPost(null);
+      if (event.key === "ArrowLeft") setPageIndex((value) => Math.max(0, value - 1));
+      if (event.key === "ArrowRight") setPageIndex((value) => Math.min(readerImages(selectedPost).length - 1, value + 1));
     }
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", closeOrTurn);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOrTurn);
+    };
   }, [selectedPost]);
+
+  function openPost(post: DoujinPost) {
+    setPageIndex(0);
+    setSelectedPost(post);
+  }
 
   return (
     <>
       <div className="resource-grid">
         {posts.map((item, index) => (
-          <button
-            className="resource-card"
-            key={item.id}
-            type="button"
-            onClick={() => setSelectedPost(item)}
-            style={{ "--card-delay": `${Math.min(index, 10) * 70}ms` } as CSSProperties}
-            aria-label={`打开 ${item.title}`}
-          >
+          <button className="resource-card" key={item.id} type="button" onClick={() => openPost(item)} style={{ "--card-delay": `${Math.min(index, 10) * 70}ms` } as CSSProperties} aria-label={`打开 ${item.title}`}>
             <span className="resource-cover">
               <img src={`${basePath}/${item.cover}`} alt={`${item.title} 封面`} loading={index > 3 ? "lazy" : undefined} />
               <span>{String(index + 1).padStart(2, "0")}</span>
@@ -44,12 +55,18 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
       </div>
 
       {selectedPost ? (
-        <div className="resource-modal-backdrop" role="presentation" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setSelectedPost(null);
-        }}>
-          <section className="resource-modal" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
+        <div className="resource-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedPost(null); }}>
+          <section className="resource-modal reader-modal" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
             <button className="resource-modal-close" type="button" onClick={() => setSelectedPost(null)} aria-label="关闭">×</button>
-            <div className="resource-modal-cover"><img src={`${basePath}/${selectedPost.cover}`} alt={`${selectedPost.title} 封面`} /></div>
+            <div className="resource-reader">
+              <div className="reader-canvas">
+                <img src={`${basePath}/${pages[pageIndex]}`} alt={`${selectedPost.title} 第 ${pageIndex + 1} 页`} />
+                <button className="reader-prev" type="button" onClick={() => setPageIndex((value) => Math.max(0, value - 1))} disabled={pageIndex === 0} aria-label="上一页">←</button>
+                <button className="reader-next" type="button" onClick={() => setPageIndex((value) => Math.min(pages.length - 1, value + 1))} disabled={pageIndex === pages.length - 1} aria-label="下一页">→</button>
+                <span className="reader-count">{String(pageIndex + 1).padStart(2, "0")} / {String(pages.length).padStart(2, "0")}</span>
+              </div>
+              {pages.length > 1 ? <div className="reader-thumbnails">{pages.map((page, index) => <button className={pageIndex === index ? "is-active" : ""} type="button" key={page} onClick={() => setPageIndex(index)} aria-label={`阅读第 ${index + 1} 页`}><img src={`${basePath}/${page}`} alt="" /></button>)}</div> : null}
+            </div>
             <div className="resource-modal-copy">
               <p>{selectedPost.japaneseTitle}</p>
               <h2 id="resource-modal-title">{selectedPost.title}</h2>

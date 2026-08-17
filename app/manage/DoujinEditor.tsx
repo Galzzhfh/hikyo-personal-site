@@ -34,13 +34,16 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
   const [authorized, setAuthorized] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [cover, setCover] = useState<File | null>(null);
+  const [pages, setPages] = useState<File[]>([]);
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [pageInputKey, setPageInputKey] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState<EditorStatus>("idle");
   const [message, setMessage] = useState("");
 
   const editingPost = editingId ? posts.find((post) => post.id === editingId) : undefined;
   const previewUrl = useMemo(() => cover ? URL.createObjectURL(cover) : "", [cover]);
+  const pagePreviewUrls = useMemo(() => pages.map((page) => URL.createObjectURL(page)), [pages]);
   const previewSource = previewUrl || (editingPost ? `${basePath}/${editingPost.cover}` : "");
   const parsedTags = form.tags.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 5);
 
@@ -48,11 +51,17 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
+  useEffect(() => () => {
+    pagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+  }, [pagePreviewUrls]);
+
   function clearForm() {
     setEditingId(null);
     setForm(initialForm);
     setCover(null);
+    setPages([]);
     setFileInputKey((value) => value + 1);
+    setPageInputKey((value) => value + 1);
   }
 
   function editPost(post: DoujinPost) {
@@ -65,7 +74,9 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       sourceUrl: post.sourceUrl,
     });
     setCover(null);
+    setPages([]);
     setFileInputKey((value) => value + 1);
+    setPageInputKey((value) => value + 1);
     setStatus("ready");
     setMessage("");
   }
@@ -102,6 +113,16 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       setMessage("封面图片请控制在 8 MB 以内。");
       return;
     }
+    if (pages.length > 20) {
+      setStatus("error");
+      setMessage("一次最多上传 20 张阅读页。");
+      return;
+    }
+    if (pages.some((page) => page.size > 8 * 1024 * 1024)) {
+      setStatus("error");
+      setMessage("每张阅读页请控制在 8 MB 以内。");
+      return;
+    }
     if (operationInFlightRef.current) return;
     operationInFlightRef.current = true;
 
@@ -119,6 +140,10 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       const coverPath = cover
         ? `doujin/${id}-${now.getTime().toString(36)}.${safeImageExtension(cover)}`
         : existingPost!.cover;
+      const existingImages = existingPost?.images ?? [];
+      const pagePaths = pages.length
+        ? pages.map((page, index) => `doujin/${id}-page-${String(index + 1).padStart(2, "0")}-${now.getTime().toString(36)}.${safeImageExtension(page)}`)
+        : existingImages;
       const nextPost: DoujinPost = {
         id,
         title: form.title.trim(),
@@ -126,6 +151,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         excerpt: form.excerpt.trim(),
         tags: parsedTags.length ? parsedTags : ["同人誌"],
         cover: coverPath,
+        images: pagePaths,
         sourceUrl: form.sourceUrl.trim(),
         createdAt: existingPost?.createdAt || now.toISOString(),
       };
@@ -140,6 +166,14 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         if (existingPost?.cover.startsWith("doujin/") && existingPost.cover !== coverPath) {
           mutations.push({ path: `public/${existingPost.cover}`, delete: true });
         }
+      }
+      if (pages.length) {
+        const pageMutations = await Promise.all(pages.map(async (page, index): Promise<RepositoryMutation> => ({
+          path: `public/${pagePaths[index]}`,
+          content: new Uint8Array(await page.arrayBuffer()),
+        })));
+        mutations.unshift(...pageMutations);
+        existingImages.filter((path) => path.startsWith("doujin/") && !pagePaths.includes(path)).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
       }
       await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`, mutations);
 
@@ -171,6 +205,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         { path: "content/doujin-posts.json", content: JSON.stringify(nextPosts, null, 2) + "\n" },
       ];
       if (target.cover.startsWith("doujin/")) mutations.push({ path: `public/${target.cover}`, delete: true });
+      (target.images ?? []).filter((path) => path.startsWith("doujin/") && path !== target.cover).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
       await commitRepositoryFiles(cleanToken, `Delete doujin post: ${target.title}`, mutations);
       setPosts(nextPosts);
       clearForm();
@@ -250,6 +285,14 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
               <span>封面图片{editingId ? "（不更换可留空）" : ""}</span>
               <input key={fileInputKey} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => setCover(event.target.files?.[0] ?? null)} required={!editingId} />
             </label>
+            <label className="field field-wide cover-field">
+              <span>阅读页（可多选，重新选择会替换原阅读页）</span>
+              <input key={pageInputKey} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => setPages(Array.from(event.target.files ?? []))} />
+            </label>
+
+            {(pagePreviewUrls.length || editingPost?.images?.length) ? <div className="reader-upload-preview field-wide" aria-label="阅读页预览">
+              {(pagePreviewUrls.length ? pagePreviewUrls : editingPost!.images!.map((path) => `${basePath}/${path}`)).map((source, index) => <img src={source} alt={`阅读页 ${index + 1}`} key={source} />)}
+            </div> : null}
 
             <div className="editor-preview field-wide" aria-label="帖子预览">
               <div className="preview-cover">

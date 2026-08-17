@@ -3,12 +3,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useMusic } from "../components/MusicProvider";
+import type { CSSProperties } from "react";
 
 export default function MusicPlayer({ basePath }: { basePath: string }) {
   const { isPlaying, toggle, tracks, currentTrack, playTrack } = useMusic();
 
   return (
-    <div className="player-shell netease-player-shell">
+    <div className={`player-shell netease-player-shell ${isPlaying ? "is-playing" : ""}`}>
       <div className={`turntable ${isPlaying ? "is-playing" : ""}`}>
         <button className="record-button" type="button" onClick={toggle} aria-label={isPlaying ? "暂停音乐" : "播放音乐"}>
           <span className="vinyl">
@@ -18,6 +19,13 @@ export default function MusicPlayer({ basePath }: { basePath: string }) {
           </span>
         </button>
         <div className="tonearm" aria-hidden="true"><span /></div>
+        <div className="soft-spectrum" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, index) => <span key={index} style={{
+            "--spectrum-height": `${8 + (index % 5) * 4}px`,
+            "--spectrum-duration": `${1.05 + (index % 4) * .16}s`,
+            "--spectrum-delay": `${index * -73}ms`,
+          } as CSSProperties} />)}
+        </div>
       </div>
 
       <div className="player-panel">
