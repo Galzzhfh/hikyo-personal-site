@@ -87,3 +87,16 @@ test("all visual assets are included in the export", async () => {
 test("starter preview files are removed", async () => {
   await assert.rejects(access(new URL("../app/_sites-preview", import.meta.url)));
 });
+
+test("GitHub Pages navigation uses native links", async () => {
+  const routeSources = await Promise.all([
+    "../app/page.tsx",
+    "../app/doujin/page.tsx",
+    "../app/music/page.tsx",
+    "../app/manage/page.tsx",
+  ].map((route) => readFile(new URL(route, import.meta.url), "utf8")));
+
+  for (const source of routeSources) {
+    assert.doesNotMatch(source, /next\/link/);
+  }
+});

@@ -4,7 +4,6 @@ import CgBackdrop from "./components/CgBackdrop";
 import SakuraFall from "./components/SakuraFall";
 import AnimeQuote from "./components/AnimeQuote";
 import HomeMusicButton from "./components/HomeMusicButton";
-import Link from "next/link";
 
 export default function Home() {
   const basePath = process.env.PAGES_BASE_PATH ?? "";
@@ -18,11 +17,11 @@ export default function Home() {
           秘境<small>ひきょう</small>
         </a>
         <nav aria-label="主导航">
-          <Link href={`${basePath}/doujin`}>本子推荐</Link>
-          <Link href={`${basePath}/music`}>音乐</Link>
+          <a href={`${basePath}/doujin`}>本子推荐</a>
+          <a href={`${basePath}/music`}>音乐</a>
           <a href="#about">关于</a>
         </nav>
-        <Link className="header-button" href={`${basePath}/music`}>音乐室 <span>♪</span></Link>
+        <a className="header-button" href={`${basePath}/music`}>音乐室 <span>♪</span></a>
       </header>
 
       <section className="hero" id="top">
@@ -36,8 +35,8 @@ export default function Home() {
             动画、游戏、同人誌与纯音乐。<br />把偶然遇见的快乐，慢慢收进这里。
           </p>
           <div className="hero-actions">
-            <Link className="primary-action" href={`${basePath}/doujin`}>本子推荐 <span>→</span></Link>
-            <Link className="secondary-action" href={`${basePath}/music`}>播放音乐 <span>♪</span></Link>
+            <a className="primary-action" href={`${basePath}/doujin`}>本子推荐 <span>→</span></a>
+            <a className="secondary-action" href={`${basePath}/music`}>播放音乐 <span>♪</span></a>
           </div>
         </div>
 
@@ -55,7 +54,7 @@ export default function Home() {
           <p className="section-index">01 / DOUJIN PICKS</p>
           <h2>同人誌の<br />おすすめ</h2>
           <div>
-            <Link className="outline-button" href={`${basePath}/doujin`}>推荐を見る <span>→</span></Link>
+            <a className="outline-button" href={`${basePath}/doujin`}>推荐を見る <span>→</span></a>
           </div>
         </div>
 
@@ -83,7 +82,7 @@ export default function Home() {
           <h2>音乐鉴赏<small>音楽鑑賞</small></h2>
           <AnimeQuote />
         </div>
-        <Link className="light-button" href={`${basePath}/music`}>进入音乐室 <span>→</span></Link>
+        <a className="light-button" href={`${basePath}/music`}>进入音乐室 <span>→</span></a>
       </section>
 
       <section className="motto" aria-label="网站标语">

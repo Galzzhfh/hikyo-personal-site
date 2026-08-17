@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { CSSProperties } from "react";
 import CgBackdrop from "../components/CgBackdrop";
 import SakuraFall from "../components/SakuraFall";
@@ -25,13 +24,13 @@ export default function DoujinPage() {
       <SakuraFall />
 
       <header className="site-header doujin-header">
-        <Link className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></Link>
+        <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
         <nav aria-label="主导航">
-          <Link href={`${basePath}/`}>首页</Link>
-          <Link href={`${basePath}/music`}>音乐</Link>
-          <Link href={`${basePath}/#about`}>关于</Link>
+          <a href={`${basePath}/`}>首页</a>
+          <a href={`${basePath}/music`}>音乐</a>
+          <a href={`${basePath}/#about`}>关于</a>
         </nav>
-        <Link className="header-button" href={`${basePath}/manage`}>管理投稿 <span>＋</span></Link>
+        <a className="header-button" href={`${basePath}/manage`}>管理投稿 <span>＋</span></a>
       </header>
 
       <section className="doujin-hero">
