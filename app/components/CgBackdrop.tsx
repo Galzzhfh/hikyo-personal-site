@@ -12,7 +12,16 @@ export default function CgBackdrop() {
   return (
     <div className="cg-backdrop" aria-hidden="true">
       {frames.map((src, index) => (
-        <img className="cg-frame" key={src} src={src} alt="" style={{ "--frame": index } as CSSProperties} />
+        <img
+          className="cg-frame"
+          key={src}
+          src={src}
+          alt=""
+          style={{
+            "--frame-delay": `${index * 7 - 1.5}s`,
+            "--frame-shift-x": `${index % 2 === 0 ? -1.2 : 1.2}%`,
+          } as CSSProperties}
+        />
       ))}
     </div>
   );

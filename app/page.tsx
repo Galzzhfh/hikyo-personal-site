@@ -2,6 +2,7 @@
 
 import CgBackdrop from "./components/CgBackdrop";
 import SakuraFall from "./components/SakuraFall";
+import AnimeQuote from "./components/AnimeQuote";
 
 export default function Home() {
   const basePath = process.env.PAGES_BASE_PATH ?? "";
@@ -88,8 +89,8 @@ export default function Home() {
         <div className="mini-record" aria-hidden="true"><span>♪</span></div>
         <div>
           <p className="section-index">02 / INSTRUMENTAL ROOM</p>
-          <h2>纯音乐，适合让时间慢一点。</h2>
-          <p>独立音乐页保留唱片动效，并通过网易云外链播放收藏的曲目。</p>
+          <h2>音乐鉴赏<small>音楽鑑賞</small></h2>
+          <AnimeQuote />
         </div>
         <a className="light-button" href={`${basePath}/music/`}>进入音乐室 <span>→</span></a>
       </section>

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "sample-01",
+    "title": "光が差す部屋",
+    "japaneseTitle": "光影收藏",
+    "excerpt": "等待写下第一篇正式推荐。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000001.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  },
+  {
+    "id": "sample-02",
+    "title": "夕暮れの余韻",
+    "japaneseTitle": "黄昏余韵",
+    "excerpt": "留给偏爱的画面与故事。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000002.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  },
+  {
+    "id": "sample-03",
+    "title": "静かな午後",
+    "japaneseTitle": "安静午后",
+    "excerpt": "把想再读一次的故事留在这里。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000003.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  },
+  {
+    "id": "sample-04",
+    "title": "花と記憶",
+    "japaneseTitle": "花与记忆",
+    "excerpt": "为以后遇见的喜欢预留位置。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000004.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  },
+  {
+    "id": "sample-05",
+    "title": "小さな物語",
+    "japaneseTitle": "小小故事",
+    "excerpt": "认真读完，也想认真记住。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000005.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  },
+  {
+    "id": "sample-06",
+    "title": "好きなままに",
+    "japaneseTitle": "保留喜欢",
+    "excerpt": "喜欢的东西，值得被认真收藏。",
+    "tags": ["同人誌", "待补充"],
+    "cover": "cg/scene-01/00000006.webp",
+    "sourceUrl": "",
+    "createdAt": "2026-08-17"
+  }
+]

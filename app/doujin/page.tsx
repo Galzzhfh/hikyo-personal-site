@@ -1,8 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import CgBackdrop from "../components/CgBackdrop";
 import SakuraFall from "../components/SakuraFall";
+import postsData from "../../content/doujin-posts.json";
+import type { DoujinPost } from "../../lib/doujin";
 
 export const dynamic = "force-static";
 
@@ -11,10 +14,7 @@ export const metadata: Metadata = {
   description: "同人誌推荐与资源收藏。",
 };
 
-const recommendations = Array.from({ length: 6 }, (_, index) => ({
-  id: index + 1,
-  image: String(index + 1).padStart(8, "0"),
-}));
+const recommendations = postsData as DoujinPost[];
 
 export default function DoujinPage() {
   const basePath = process.env.PAGES_BASE_PATH ?? "";
@@ -30,7 +30,7 @@ export default function DoujinPage() {
           <a href={`${basePath}/music/`}>音乐</a>
           <a href={`${basePath}/#about`}>关于</a>
         </nav>
-        <a className="header-button" href={`${basePath}/`}>返回首页 <span>↗</span></a>
+        <a className="header-button" href={`${basePath}/manage/`}>管理投稿 <span>＋</span></a>
       </header>
 
       <section className="doujin-hero">
@@ -44,22 +44,28 @@ export default function DoujinPage() {
 
       <section className="resource-section" aria-label="同人誌资源卡片">
         <div className="resource-grid">
-          {recommendations.map((item) => (
-            <article className="resource-card" key={item.id}>
+          {recommendations.map((item, index) => (
+            <article
+              className="resource-card"
+              key={item.id}
+              style={{ "--card-delay": `${Math.min(index, 10) * 70}ms` } as CSSProperties}
+            >
               <div className="resource-cover">
                 <img
-                  src={`${basePath}/cg/scene-01/${item.image}.webp`}
-                  alt={`同人誌推荐位 ${String(item.id).padStart(2, "0")} 封面占位图`}
-                  loading={item.id > 4 ? "lazy" : undefined}
+                  src={`${basePath}/${item.cover}`}
+                  alt={`${item.title} 封面`}
+                  loading={index > 3 ? "lazy" : undefined}
                 />
-                <span>{String(item.id).padStart(2, "0")}</span>
+                <span>{String(index + 1).padStart(2, "0")}</span>
               </div>
               <div className="resource-card-body">
-                <h2>推荐位 {String(item.id).padStart(2, "0")}</h2>
+                <p>{item.japaneseTitle}</p>
+                <h2>{item.title}</h2>
+                <p className="resource-card-summary">{item.excerpt}</p>
                 <div className="resource-card-meta">
-                  <span>同人誌</span>
-                  <span>待补充</span>
+                  {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
                 </div>
+                {item.sourceUrl ? <a className="resource-link" href={item.sourceUrl} target="_blank" rel="noreferrer">查看收藏 <span>↗</span></a> : null}
               </div>
             </article>
           ))}

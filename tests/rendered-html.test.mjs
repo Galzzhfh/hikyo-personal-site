@@ -46,7 +46,18 @@ test("doujin recommendations are exported as a dedicated resource grid", async (
 
   assert.match(html, /同人誌の.*おすすめ/s);
   assert.match(html, /resource-grid/);
-  assert.match(html, /推荐位 06/);
+  assert.match(html, /光が差す部屋/);
+  assert.match(html, /好きなままに/);
+  assert.match(html, /管理投稿/);
+});
+
+test("owner editor is exported without embedding credentials", async () => {
+  const html = await readFile(new URL("manage.html", clientUrl), "utf8");
+
+  assert.match(html, /投稿管理/);
+  assert.match(html, /GitHub 令牌/);
+  assert.match(html, /发布投稿/);
+  assert.doesNotMatch(html, /github_pat_[A-Za-z0-9_]+/);
 });
 
 test("all visual assets are included in the export", async () => {
