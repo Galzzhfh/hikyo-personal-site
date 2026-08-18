@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState, type CSSProperties } from "react";
-import type { DoujinPost } from "../../lib/doujin";
+import { doujinImageSource, isRemoteDoujinImage, type DoujinPost } from "../../lib/doujin";
 
 function readerImages(post: DoujinPost) {
   return post.images?.length ? [...new Set(post.images)] : [post.cover];
@@ -13,6 +13,7 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
   const [selectedPost, setSelectedPost] = useState<DoujinPost | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const pages = selectedPost ? readerImages(selectedPost) : [];
+  const isLongStrip = pages.length === 1;
 
   useEffect(() => {
     if (!selectedPost) return;
@@ -41,7 +42,7 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
         {posts.map((item, index) => (
           <button className="resource-card" key={item.id} type="button" onClick={() => openPost(item)} style={{ "--card-delay": `${Math.min(index, 10) * 70}ms` } as CSSProperties} aria-label={`打开 ${item.title}`}>
             <span className="resource-cover">
-              <img src={`${basePath}/${item.cover}`} alt={`${item.title} 封面`} loading={index > 3 ? "lazy" : undefined} />
+              <img src={doujinImageSource(basePath, item.cover)} alt={`${item.title} 封面`} loading={index > 3 ? "lazy" : undefined} />
               <span>{String(index + 1).padStart(2, "0")}</span>
             </span>
             <span className="resource-card-body">
@@ -58,14 +59,16 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
         <div className="resource-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedPost(null); }}>
           <section className="resource-modal reader-modal" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
             <button className="resource-modal-close" type="button" onClick={() => setSelectedPost(null)} aria-label="关闭">×</button>
-            <div className="resource-reader">
+            <div className={`resource-reader ${isLongStrip ? "is-long-strip" : ""}`}>
               <div className="reader-canvas">
-                <img src={`${basePath}/${pages[pageIndex]}`} alt={`${selectedPost.title} 第 ${pageIndex + 1} 页`} />
-                <button className="reader-prev" type="button" onClick={() => setPageIndex((value) => Math.max(0, value - 1))} disabled={pageIndex === 0} aria-label="上一页">←</button>
-                <button className="reader-next" type="button" onClick={() => setPageIndex((value) => Math.min(pages.length - 1, value + 1))} disabled={pageIndex === pages.length - 1} aria-label="下一页">→</button>
-                <span className="reader-count">{String(pageIndex + 1).padStart(2, "0")} / {String(pages.length).padStart(2, "0")}</span>
+                <img src={doujinImageSource(basePath, pages[pageIndex])} alt={`${selectedPost.title} 第 ${pageIndex + 1} 页`} />
+                {!isLongStrip ? <>
+                  <button className="reader-prev" type="button" onClick={() => setPageIndex((value) => Math.max(0, value - 1))} disabled={pageIndex === 0} aria-label="上一页">←</button>
+                  <button className="reader-next" type="button" onClick={() => setPageIndex((value) => Math.min(pages.length - 1, value + 1))} disabled={pageIndex === pages.length - 1} aria-label="下一页">→</button>
+                  <span className="reader-count">{String(pageIndex + 1).padStart(2, "0")} / {String(pages.length).padStart(2, "0")}</span>
+                </> : null}
               </div>
-              {pages.length > 1 ? <div className="reader-thumbnails">{pages.map((page, index) => <button className={pageIndex === index ? "is-active" : ""} type="button" key={page} onClick={() => setPageIndex(index)} aria-label={`阅读第 ${index + 1} 页`}><img src={`${basePath}/${page}`} alt="" /></button>)}</div> : null}
+              {pages.length > 1 ? <div className="reader-thumbnails">{pages.map((page, index) => <button className={pageIndex === index ? "is-active" : ""} type="button" key={page} onClick={() => setPageIndex(index)} aria-label={`阅读第 ${index + 1} 页`}>{isRemoteDoujinImage(page) ? <span>{index + 1}</span> : <img src={doujinImageSource(basePath, page)} alt="" loading="lazy" />}</button>)}</div> : null}
             </div>
             <div className="resource-modal-copy">
               <p>{selectedPost.japaneseTitle}</p>

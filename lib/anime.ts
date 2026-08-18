@@ -1,3 +1,3 @@
 import type { VisualArchiveItem } from "./archive";
 
-export type GamePost = VisualArchiveItem;
+export type AnimePost = VisualArchiveItem;

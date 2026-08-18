@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import type { DoujinPost } from "../../lib/doujin";
 import type { GamePost } from "../../lib/game";
+import type { AnimePost } from "../../lib/anime";
 import AnimeQuote from "./AnimeQuote";
 import CgBackdrop from "./CgBackdrop";
 import HomeMusicButton from "./HomeMusicButton";
@@ -12,18 +13,20 @@ import SakuraFall from "./SakuraFall";
 import ThemeControl from "./ThemeControl";
 import DoujinGallery from "../doujin/DoujinGallery";
 import GameGallery from "../games/GameGallery";
+import AnimeGallery from "../anime/AnimeGallery";
 import MusicPlayer from "../music/MusicPlayer";
 
-type PublicView = "home" | "doujin" | "games" | "music";
+type PublicView = "home" | "doujin" | "games" | "anime" | "music";
 
 function viewFromHash(hash: string): PublicView {
   if (hash === "#doujin") return "doujin";
-  if (hash === "#games") return "games";
+  if (hash === "#games" || hash.startsWith("#games/")) return "games";
+  if (hash === "#anime" || hash.startsWith("#anime/")) return "anime";
   if (hash === "#music") return "music";
   return "home";
 }
 
-export default function PublicApp({ basePath, posts, games }: { basePath: string; posts: DoujinPost[]; games: GamePost[] }) {
+export default function PublicApp({ basePath, posts, games, anime }: { basePath: string; posts: DoujinPost[]; games: GamePost[]; anime: AnimePost[] }) {
   const [view, setView] = useState<PublicView>("home");
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function PublicApp({ basePath, posts, games }: { basePath: string
       const nextView = viewFromHash(hash);
       setView(nextView);
       window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-        const targetId = hash === "#about" ? "about" : hash === "#notes" ? "notes" : hash === "#top" ? "top" : "";
+        const targetId = hash === "#about" ? "about" : hash === "#notes" ? "notes" : hash === "#top" ? "top" : hash.startsWith("#games/") ? "game-archive" : hash.startsWith("#anime/") ? "anime-archive" : "";
         if (targetId) document.getElementById(targetId)?.scrollIntoView();
         else window.scrollTo({ top: 0, behavior: "auto" });
       }));
@@ -57,6 +60,7 @@ export default function PublicApp({ basePath, posts, games }: { basePath: string
           <nav aria-label="主导航">
             <a href="#doujin">本子推荐</a>
             <a href="#games">游戏推荐</a>
+            <a href="#anime">动画推荐</a>
             <a href="#music">音乐</a>
             <a href="#about">关于</a>
           </nav>
@@ -122,7 +126,7 @@ export default function PublicApp({ basePath, posts, games }: { basePath: string
       <main className="doujin-page" data-public-view="doujin" hidden={view !== "doujin"}>
         <header className="site-header doujin-header">
           <a className="brand" href="#home" aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
-          <nav aria-label="主导航"><a href="#home">首页</a><a href="#games">游戏推荐</a><a href="#music">音乐</a><a href="#about">关于</a></nav>
+          <nav aria-label="主导航"><a href="#home">首页</a><a href="#games">游戏推荐</a><a href="#anime">动画推荐</a><a href="#music">音乐</a><a href="#about">关于</a></nav>
           <a className="owner-entry" href={`${basePath}/manage`} target="_blank" rel="noreferrer" aria-label="站主管理">✦</a>
         </header>
         <section className="doujin-hero">
@@ -136,20 +140,35 @@ export default function PublicApp({ basePath, posts, games }: { basePath: string
       <main className="game-page" data-public-view="games" hidden={view !== "games"}>
         <header className="site-header game-header">
           <a className="brand" href="#home" aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
-          <nav aria-label="主导航"><a href="#home">首页</a><a href="#doujin">本子推荐</a><a href="#music">音乐</a><a href="#about">关于</a></nav>
+          <nav aria-label="主导航"><a href="#home">首页</a><a href="#doujin">本子推荐</a><a href="#anime">动画推荐</a><a href="#music">音乐</a><a href="#about">关于</a></nav>
+          <a className="owner-entry" href={`${basePath}/manage/games`} target="_blank" rel="noreferrer" aria-label="游戏管理">✦</a>
         </header>
         <section className="game-hero">
           <CgBackdrop />
           <div className="game-hero-shade" />
           <div className="game-hero-copy"><p className="eyebrow"><span /> GAME ARCHIVE</p><h1>ゲームの<br />おすすめ</h1></div>
         </section>
-        <section className="game-section" aria-label="游戏推荐卡片"><GameGallery games={games} basePath={basePath} /></section>
+        <section className="game-section" id="game-archive" aria-label="游戏推荐卡片"><GameGallery games={games} basePath={basePath} /></section>
+      </main>
+
+      <main className="anime-page" data-public-view="anime" hidden={view !== "anime"}>
+        <header className="site-header anime-header">
+          <a className="brand" href="#home" aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
+          <nav aria-label="主导航"><a href="#home">首页</a><a href="#doujin">本子推荐</a><a href="#games">游戏推荐</a><a href="#music">音乐</a><a href="#about">关于</a></nav>
+          <a className="owner-entry" href={`${basePath}/manage/anime`} target="_blank" rel="noreferrer" aria-label="动画管理">✦</a>
+        </header>
+        <section className="anime-hero">
+          <CgBackdrop />
+          <div className="anime-hero-shade" />
+          <div className="anime-hero-copy"><p className="eyebrow"><span /> ANIME ARCHIVE</p><h1>アニメの<br />おすすめ</h1></div>
+        </section>
+        <section className="anime-section" id="anime-archive" aria-label="动画推荐卡片"><AnimeGallery anime={anime} basePath={basePath} /></section>
       </main>
 
       <main className="music-page" data-public-view="music" hidden={view !== "music"}>
         <header className="site-header music-header">
           <a className="brand" href="#home" aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
-          <nav aria-label="主导航"><a href="#home">首页</a><a href="#doujin">本子推荐</a><a href="#games">游戏推荐</a><a href="#about">关于</a></nav>
+          <nav aria-label="主导航"><a href="#home">首页</a><a href="#doujin">本子推荐</a><a href="#games">游戏推荐</a><a href="#anime">动画推荐</a><a href="#about">关于</a></nav>
           <a className="owner-entry" href={`${basePath}/manage/music`} target="_blank" rel="noreferrer" aria-label="站主管理">✦</a>
         </header>
         <section className="music-stage">

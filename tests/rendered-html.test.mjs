@@ -78,6 +78,7 @@ test("doujin recommendations are rendered as openable cards without likes or sor
   assert.match(gallery, /setSelectedPost/);
   assert.match(gallery, /role="dialog"/);
   assert.match(gallery, /reader-canvas/);
+  assert.match(gallery, /is-long-strip/);
   assert.match(gallery, /ArrowLeft/);
   assert.match(gallery, /ArrowRight/);
   assert.match(gallery, /aria-label={`打开 \${item.title}`}/);
@@ -113,32 +114,70 @@ test("doujin editor supports deleting posts", async () => {
   assert.match(editorSource, /operationInFlightRef/);
   assert.match(editorSource, /multiple/);
   assert.match(editorSource, /一次最多上传 20 张阅读页/);
+  assert.match(editorSource, /每张漫画长图或阅读页请控制在 20 MB 以内/);
+  assert.match(editorSource, /OneDrive \/ SharePoint 图片直链/);
+  assert.match(editorSource, /isSupportedRemoteImage/);
+  assert.match(editorSource, /本地上传和网盘直链请选择一种阅读来源/);
 });
 
-test("game recommendations open preview images and completion notes", async () => {
-  const [html, gallery, gamesSource] = await Promise.all([
+test("remote manga images stay outside GitHub and load through the reader", async () => {
+  const [gallery, postsSource] = await Promise.all([
+    readFile(new URL("../app/doujin/DoujinGallery.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../content/doujin-posts.json", import.meta.url), "utf8"),
+  ]);
+  const posts = JSON.parse(postsSource);
+  const remoteImages = posts.flatMap((post) => post.images ?? []).filter((source) => source.startsWith("https://"));
+
+  assert.ok(remoteImages.length > 0);
+  assert.match(remoteImages[0], /\.sharepoint\.com\//);
+  assert.match(gallery, /doujinImageSource/);
+  assert.match(gallery, /isRemoteDoujinImage/);
+});
+
+test("game and anime recommendations open full resource details", async () => {
+  const [html, archiveGallery, gamesSource] = await Promise.all([
     readFile(new URL("index.html", clientUrl), "utf8"),
-    readFile(new URL("../app/games/GameGallery.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/archive/ArchiveGallery.tsx", import.meta.url), "utf8"),
     readFile(new URL("../content/game-posts.json", import.meta.url), "utf8"),
   ]);
   const games = JSON.parse(gamesSource);
 
   assert.match(html, /ゲームの.*おすすめ/s);
+  assert.match(html, /アニメの.*おすすめ/s);
   for (const game of games) assert.match(html, new RegExp(game.title));
-  assert.match(gallery, /game-preview-stage/);
-  assert.match(gallery, /game-thumbnails/);
-  assert.match(gallery, /selectedGame\.thoughts/);
+  assert.match(archiveGallery, /archive-detail/);
+  assert.match(archiveGallery, /archive-preview-stage/);
+  assert.match(archiveGallery, /selectedItem\.thoughts/);
+  assert.match(archiveGallery, /window\.history\.pushState/);
+});
+
+test("game and anime editors support owner CRUD and preview uploads", async () => {
+  const [gameHtml, animeHtml, editorSource] = await Promise.all([
+    readFile(new URL("manage/games.html", clientUrl), "utf8"),
+    readFile(new URL("manage/anime.html", clientUrl), "utf8"),
+    readFile(new URL("../app/manage/VisualArchiveEditor.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(gameHtml, /游戏管理/);
+  assert.match(animeHtml, /动画管理/);
+  assert.match(editorSource, /deleteItem/);
+  assert.match(editorSource, /multiple/);
+  assert.match(editorSource, /content\/game-posts\.json/);
+  assert.match(editorSource, /content\/anime-posts\.json/);
+  assert.doesNotMatch(gameHtml + animeHtml, /github_pat_[A-Za-z0-9_]+/);
 });
 
 test("owner editors prevent duplicate GitHub submissions", async () => {
-  const [doujinEditor, musicEditor, githubClient] = await Promise.all([
+  const [doujinEditor, musicEditor, visualEditor, githubClient] = await Promise.all([
     readFile(new URL("../app/manage/DoujinEditor.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/manage/music/MusicEditor.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/manage/VisualArchiveEditor.tsx", import.meta.url), "utf8"),
     readFile(new URL("../lib/github-owner.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(doujinEditor, /operationInFlightRef\.current/);
   assert.match(musicEditor, /operationInFlightRef\.current/);
+  assert.match(visualEditor, /operationInFlightRef\.current/);
   assert.match(githubClient, /Update is not a fast forward/);
 });
 
@@ -171,10 +210,14 @@ test("public navigation uses hash views so the music provider is not reloaded", 
   assert.match(publicApp, /href="#doujin"/);
   assert.match(publicApp, /href="#music"/);
   assert.match(publicApp, /href="#games"/);
+  assert.match(publicApp, /href="#anime"/);
   assert.match(publicApp, /data-public-view="home"/);
   assert.match(publicApp, /data-public-view="doujin"/);
   assert.match(publicApp, /data-public-view="music"/);
   assert.match(publicApp, /data-public-view="games"/);
+  assert.match(publicApp, /data-public-view="anime"/);
+  assert.match(publicApp, /hash\.startsWith\("#games\/"\)/);
+  assert.match(publicApp, /hash\.startsWith\("#anime\/"\)/);
   assert.match(doujinRoute, /PublicViewRedirect[^>]+view="doujin"/);
   assert.match(musicRoute, /PublicViewRedirect[^>]+view="music"/);
   assert.doesNotMatch(publicApp, /next\/link/);

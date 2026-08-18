@@ -23,6 +23,8 @@ export default function MusicManagePage() {
         <a className="brand" href={`${basePath}/`} aria-label="秘境，返回首页">秘境<small>ひきょう</small></a>
         <nav aria-label="管理导航">
           <a href={`${basePath}/manage`}>投稿管理</a>
+          <a href={`${basePath}/manage/games`}>游戏管理</a>
+          <a href={`${basePath}/manage/anime`}>动画管理</a>
           <a href={`${basePath}/doujin`}>本子推荐</a>
           <a href={`${basePath}/music`}>音乐室</a>
         </nav>

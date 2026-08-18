@@ -9,3 +9,11 @@ export type DoujinPost = {
   sourceUrl: string;
   createdAt: string;
 };
+
+export function isRemoteDoujinImage(source: string) {
+  return /^https:\/\//i.test(source);
+}
+
+export function doujinImageSource(basePath: string, source: string) {
+  return isRemoteDoujinImage(source) ? source : `${basePath}/${source.replace(/^\/+/, "")}`;
+}

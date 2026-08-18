@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import type { DoujinPost } from "../../lib/doujin";
+import { doujinImageSource, isRemoteDoujinImage, type DoujinPost } from "../../lib/doujin";
 import {
   commitRepositoryFiles,
   readRepositoryJson,
@@ -25,7 +25,21 @@ const initialForm = {
   excerpt: "",
   tags: "同人誌",
   sourceUrl: "",
+  remoteImages: "",
 };
+
+function parseRemoteImages(value: string) {
+  return value.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+}
+
+function isSupportedRemoteImage(url: string) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && (parsed.hostname === "1drv.ms" || parsed.hostname === "onedrive.live.com" || parsed.hostname.endsWith(".sharepoint.com"));
+  } catch {
+    return false;
+  }
+}
 
 export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
   const operationInFlightRef = useRef(false);
@@ -46,6 +60,8 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
   const pagePreviewUrls = useMemo(() => pages.map((page) => URL.createObjectURL(page)), [pages]);
   const previewSource = previewUrl || (editingPost ? `${basePath}/${editingPost.cover}` : "");
   const parsedTags = form.tags.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean).slice(0, 5);
+  const remoteImages = parseRemoteImages(form.remoteImages);
+  const storedLocalImages = (editingPost?.images ?? []).filter((source) => !isRemoteDoujinImage(source));
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -72,6 +88,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       excerpt: post.excerpt,
       tags: post.tags.join(", "),
       sourceUrl: post.sourceUrl,
+      remoteImages: (post.images ?? []).filter(isRemoteDoujinImage).join("\n"),
     });
     setCover(null);
     setPages([]);
@@ -118,9 +135,24 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       setMessage("一次最多上传 20 张阅读页。");
       return;
     }
-    if (pages.some((page) => page.size > 8 * 1024 * 1024)) {
+    if (pages.some((page) => page.size > 20 * 1024 * 1024)) {
       setStatus("error");
-      setMessage("每张阅读页请控制在 8 MB 以内。");
+      setMessage("每张漫画长图或阅读页请控制在 20 MB 以内。");
+      return;
+    }
+    if (remoteImages.length > 20) {
+      setStatus("error");
+      setMessage("一次最多填写 20 条网盘图片直链。");
+      return;
+    }
+    if (remoteImages.some((url) => !isSupportedRemoteImage(url))) {
+      setStatus("error");
+      setMessage("请填写有效的 OneDrive 或 SharePoint HTTPS 直链，每行一条。");
+      return;
+    }
+    if (pages.length && remoteImages.length) {
+      setStatus("error");
+      setMessage("本地上传和网盘直链请选择一种阅读来源。");
       return;
     }
     if (operationInFlightRef.current) return;
@@ -141,9 +173,10 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         ? `doujin/${id}-${now.getTime().toString(36)}.${safeImageExtension(cover)}`
         : existingPost!.cover;
       const existingImages = existingPost?.images ?? [];
-      const pagePaths = pages.length
+      const uploadedPagePaths = pages.length
         ? pages.map((page, index) => `doujin/${id}-page-${String(index + 1).padStart(2, "0")}-${now.getTime().toString(36)}.${safeImageExtension(page)}`)
-        : existingImages;
+        : [];
+      const pagePaths = remoteImages.length ? remoteImages : uploadedPagePaths.length ? uploadedPagePaths : existingImages;
       const nextPost: DoujinPost = {
         id,
         title: form.title.trim(),
@@ -169,12 +202,12 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       }
       if (pages.length) {
         const pageMutations = await Promise.all(pages.map(async (page, index): Promise<RepositoryMutation> => ({
-          path: `public/${pagePaths[index]}`,
+          path: `public/${uploadedPagePaths[index]}`,
           content: new Uint8Array(await page.arrayBuffer()),
         })));
         mutations.unshift(...pageMutations);
-        existingImages.filter((path) => path.startsWith("doujin/") && !pagePaths.includes(path)).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
       }
+      if (pages.length || remoteImages.length) existingImages.filter((path) => path.startsWith("doujin/") && !pagePaths.includes(path)).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
       await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`, mutations);
 
       setPosts(nextPosts);
@@ -286,12 +319,17 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
               <input key={fileInputKey} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => setCover(event.target.files?.[0] ?? null)} required={!editingId} />
             </label>
             <label className="field field-wide cover-field">
-              <span>阅读页（可多选，重新选择会替换原阅读页）</span>
+              <span>漫画长图或阅读页（可多选，重新选择会替换原内容）</span>
               <input key={pageInputKey} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => setPages(Array.from(event.target.files ?? []))} />
             </label>
+            <label className="field field-wide">
+              <span>OneDrive / SharePoint 图片直链（每行一条，与本地上传二选一）</span>
+              <textarea value={form.remoteImages} onChange={(event) => setForm({ ...form, remoteImages: event.target.value })} rows={4} placeholder="https://…/download.aspx?share=…" />
+            </label>
 
-            {(pagePreviewUrls.length || editingPost?.images?.length) ? <div className="reader-upload-preview field-wide" aria-label="阅读页预览">
-              {(pagePreviewUrls.length ? pagePreviewUrls : editingPost!.images!.map((path) => `${basePath}/${path}`)).map((source, index) => <img src={source} alt={`阅读页 ${index + 1}`} key={source} />)}
+            {remoteImages.length ? <p className="remote-reader-note field-wide">已设置 {remoteImages.length} 条网盘直链，阅读时按需加载。</p> : null}
+            {(pagePreviewUrls.length || storedLocalImages.length) ? <div className="reader-upload-preview field-wide" aria-label="阅读页预览">
+              {(pagePreviewUrls.length ? pagePreviewUrls : storedLocalImages.map((path) => doujinImageSource(basePath, path))).map((source, index) => <img src={source} alt={`阅读页 ${index + 1}`} key={source} />)}
             </div> : null}
 
             <div className="editor-preview field-wide" aria-label="帖子预览">
