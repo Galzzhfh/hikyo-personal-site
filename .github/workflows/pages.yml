@@ -33,6 +33,7 @@ jobs:
           cache: pnpm
 
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
@@ -40,21 +41,18 @@ jobs:
 
       - name: Configure site path
         shell: bash
+        env:
+          SITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_BASE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
-          repo_name="${GITHUB_REPOSITORY#*/}"
-          if [[ "$repo_name" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
-            base_path=""
-          else
-            base_path="/$repo_name"
-          fi
-          echo "PAGES_BASE_PATH=$base_path" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_SITE_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io${base_path}/" >> "$GITHUB_ENV"
+          echo "PAGES_BASE_PATH=$SITE_BASE_PATH" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${SITE_BASE_URL%/}/" >> "$GITHUB_ENV"
 
-      - name: Build static site
-        run: pnpm build
+      - name: Check source
+        run: pnpm typecheck && pnpm lint
 
-      - name: Apply GitHub Pages asset path
-        run: node scripts/prefix-pages.mjs
+      - name: Build and test static site
+        run: pnpm test
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

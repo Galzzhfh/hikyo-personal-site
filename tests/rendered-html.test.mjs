@@ -59,6 +59,8 @@ test("music room stays mounted inside the public app", async () => {
   assert.doesNotMatch(html, /触碰唱片|在网易云打开|播放这张唱片/);
   assert.match(player, /soft-spectrum/);
   assert.match(provider, /music-is-playing/);
+  assert.match(provider, /playbackError/);
+  assert.equal(JSON.parse(await readFile(new URL("../content/music-tracks.json", import.meta.url), "utf8"))[0].songId, "2737806685");
   assert.match(css, /music-breathe/);
   assert.match(css, /spectrum-wave/);
 });
@@ -178,7 +180,27 @@ test("owner editors prevent duplicate GitHub submissions", async () => {
   assert.match(doujinEditor, /operationInFlightRef\.current/);
   assert.match(musicEditor, /operationInFlightRef\.current/);
   assert.match(visualEditor, /operationInFlightRef\.current/);
+  assert.match(githubClient, /readRepositoryJsonSnapshot/);
+  assert.match(githubClient, /expectedHeadSha/);
   assert.match(githubClient, /Update is not a fast forward/);
+});
+
+test("Pages deployment supports custom domains and trailing-slash management routes", async () => {
+  const [workflow, prefixScript] = await Promise.all([
+    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/prefix-pages.mjs", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(workflow, /id: pages/);
+  assert.match(workflow, /steps\.pages\.outputs\.base_path/);
+  assert.match(workflow, /steps\.pages\.outputs\.base_url/);
+  assert.doesNotMatch(workflow, /repo_name=/);
+  assert.match(prefixScript, /"manage\/games"/);
+  assert.match(prefixScript, /"manage\/anime"/);
+  await Promise.all([
+    access(new URL("manage/games/index.html", clientUrl)),
+    access(new URL("manage/anime/index.html", clientUrl)),
+  ]);
 });
 
 test("all visual assets are included in the export", async () => {

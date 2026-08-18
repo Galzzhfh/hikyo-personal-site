@@ -17,12 +17,13 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
 
   useEffect(() => {
     if (!selectedPost) return;
+    const currentPost = selectedPost;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     function closeOrTurn(event: KeyboardEvent) {
       if (event.key === "Escape") setSelectedPost(null);
       if (event.key === "ArrowLeft") setPageIndex((value) => Math.max(0, value - 1));
-      if (event.key === "ArrowRight") setPageIndex((value) => Math.min(readerImages(selectedPost).length - 1, value + 1));
+      if (event.key === "ArrowRight") setPageIndex((value) => Math.min(readerImages(currentPost).length - 1, value + 1));
     }
     window.addEventListener("keydown", closeOrTurn);
     return () => {

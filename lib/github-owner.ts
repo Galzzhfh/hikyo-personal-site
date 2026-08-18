@@ -63,9 +63,21 @@ export async function readRepositoryJson<T>(path: string, token: string, fallbac
   return content.encoding === "base64" ? JSON.parse(base64ToText(content.content)) as T : fallback;
 }
 
-export async function commitRepositoryFiles(token: string, message: string, mutations: RepositoryMutation[]) {
+export async function readRepositoryJsonSnapshot<T>(path: string, token: string, fallback: T) {
+  const reference = await githubRequest<GitRef>(`/repos/${repository}/git/ref/heads/${branch}`, token);
+  const content = await githubRequest<GitHubContent>(`/repos/${repository}/contents/${path}?ref=${reference.object.sha}`, token);
+  return {
+    data: content.encoding === "base64" ? JSON.parse(base64ToText(content.content)) as T : fallback,
+    expectedHeadSha: reference.object.sha,
+  };
+}
+
+export async function commitRepositoryFiles(token: string, message: string, mutations: RepositoryMutation[], expectedHeadSha: string) {
   await verifyOwner(token);
   const reference = await githubRequest<GitRef>(`/repos/${repository}/git/ref/heads/${branch}`, token);
+  if (reference.object.sha !== expectedHeadSha) {
+    throw new Error("仓库内容已被其他页面更新。请刷新管理页面后重新操作，避免覆盖最新内容。");
+  }
   const parent = await githubRequest<GitCommit>(`/repos/${repository}/git/commits/${reference.object.sha}`, token);
   const treeEntries = await Promise.all(mutations.map(async (mutation): Promise<GitTreeEntry> => {
     if ("delete" in mutation) {

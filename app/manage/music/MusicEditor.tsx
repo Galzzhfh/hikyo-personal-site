@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   commitRepositoryFiles,
   readRepositoryJson,
+  readRepositoryJsonSnapshot,
   safeImageExtension,
   verifyOwner,
   type RepositoryMutation,
@@ -108,7 +109,7 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
     setMessage(editingId ? "正在保存修改…" : "正在添加曲目…");
     try {
       const cleanToken = token.trim();
-      const currentTracks = await readRepositoryJson("content/music-tracks.json", cleanToken, tracks);
+      const { data: currentTracks, expectedHeadSha } = await readRepositoryJsonSnapshot("content/music-tracks.json", cleanToken, tracks);
       const existingTrack = editingId ? currentTracks.find((track) => track.id === editingId) : undefined;
       if (editingId && !existingTrack) throw new Error("没有找到要修改的曲目，请刷新后重试。");
       const now = new Date();
@@ -136,7 +137,7 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
           mutations.push({ path: `public/${existingTrack.cover}`, delete: true });
         }
       }
-      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} music track: ${nextTrack.title}`, mutations);
+      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} music track: ${nextTrack.title}`, mutations, expectedHeadSha);
       setTracks(nextTracks);
       clearForm();
       setStatus("success");
@@ -157,7 +158,7 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
     setMessage("正在删除曲目…");
     try {
       const cleanToken = token.trim();
-      const currentTracks = await readRepositoryJson("content/music-tracks.json", cleanToken, tracks);
+      const { data: currentTracks, expectedHeadSha } = await readRepositoryJsonSnapshot("content/music-tracks.json", cleanToken, tracks);
       const target = currentTracks.find((item) => item.id === track.id);
       if (!target) throw new Error("没有找到要删除的曲目，请刷新后重试。");
       const nextTracks = currentTracks.filter((item) => item.id !== track.id);
@@ -165,7 +166,7 @@ export default function MusicEditor({ initialTracks, basePath }: EditorProps) {
         { path: "content/music-tracks.json", content: JSON.stringify(nextTracks, null, 2) + "\n" },
       ];
       if (target.cover.startsWith("music/")) mutations.push({ path: `public/${target.cover}`, delete: true });
-      await commitRepositoryFiles(cleanToken, `Delete music track: ${target.title}`, mutations);
+      await commitRepositoryFiles(cleanToken, `Delete music track: ${target.title}`, mutations, expectedHeadSha);
       setTracks(nextTracks);
       clearForm();
       setStatus("success");

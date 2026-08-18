@@ -7,6 +7,7 @@ import type { VisualArchiveItem } from "../../lib/archive";
 import {
   commitRepositoryFiles,
   readRepositoryJson,
+  readRepositoryJsonSnapshot,
   safeImageExtension,
   verifyOwner,
   type RepositoryMutation,
@@ -146,7 +147,7 @@ export default function VisualArchiveEditor({ initialItems, basePath, kind }: Ed
 
     try {
       const cleanToken = token.trim();
-      const currentItems = await readRepositoryJson<VisualArchiveItem[]>(config.repositoryPath, cleanToken, items);
+      const { data: currentItems, expectedHeadSha } = await readRepositoryJsonSnapshot<VisualArchiveItem[]>(config.repositoryPath, cleanToken, items);
       const existingItem = editingId ? currentItems.find((item) => item.id === editingId) : undefined;
       if (editingId && !existingItem) throw new Error(`没有找到要修改的${config.itemName}，请刷新后重试。`);
 
@@ -200,7 +201,7 @@ export default function VisualArchiveEditor({ initialItems, basePath, kind }: Ed
         }
       });
 
-      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} ${kind}: ${nextItem.title}`, mutations);
+      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} ${kind}: ${nextItem.title}`, mutations, expectedHeadSha);
       setItems(nextItems);
       clearForm();
       setStatus("success");
@@ -221,7 +222,7 @@ export default function VisualArchiveEditor({ initialItems, basePath, kind }: Ed
     setMessage(`正在删除${config.itemName}…`);
     try {
       const cleanToken = token.trim();
-      const currentItems = await readRepositoryJson<VisualArchiveItem[]>(config.repositoryPath, cleanToken, items);
+      const { data: currentItems, expectedHeadSha } = await readRepositoryJsonSnapshot<VisualArchiveItem[]>(config.repositoryPath, cleanToken, items);
       const target = currentItems.find((current) => current.id === item.id);
       if (!target) throw new Error(`没有找到要删除的${config.itemName}，请刷新后重试。`);
       const nextItems = currentItems.filter((current) => current.id !== item.id);
@@ -231,7 +232,7 @@ export default function VisualArchiveEditor({ initialItems, basePath, kind }: Ed
       [...new Set([target.cover, ...target.previews])].forEach((path) => {
         if (path.startsWith(`${config.assetDirectory}/`)) mutations.push({ path: `public/${path}`, delete: true });
       });
-      await commitRepositoryFiles(cleanToken, `Delete ${kind}: ${target.title}`, mutations);
+      await commitRepositoryFiles(cleanToken, `Delete ${kind}: ${target.title}`, mutations, expectedHeadSha);
       setItems(nextItems);
       clearForm();
       setStatus("success");

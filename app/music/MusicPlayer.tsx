@@ -6,7 +6,7 @@ import { useMusic } from "../components/MusicProvider";
 import type { CSSProperties } from "react";
 
 export default function MusicPlayer({ basePath }: { basePath: string }) {
-  const { isPlaying, toggle, tracks, currentTrack, playTrack } = useMusic();
+  const { isPlaying, playbackError, toggle, tracks, currentTrack, playTrack } = useMusic();
 
   return (
     <div className={`player-shell netease-player-shell ${isPlaying ? "is-playing" : ""}`}>
@@ -32,7 +32,7 @@ export default function MusicPlayer({ basePath }: { basePath: string }) {
         <div className="track-meta">
           <p>NOW PLAYING</p>
           <h2>{currentTrack?.title ?? "暂无曲目"}</h2>
-          <span>{currentTrack?.artist ?? ""}</span>
+          <span>{playbackError || currentTrack?.artist || ""}</span>
         </div>
 
         <div className="record-control">

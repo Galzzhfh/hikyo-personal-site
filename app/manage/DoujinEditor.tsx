@@ -7,6 +7,7 @@ import { doujinImageSource, isRemoteDoujinImage, type DoujinPost } from "../../l
 import {
   commitRepositoryFiles,
   readRepositoryJson,
+  readRepositoryJsonSnapshot,
   safeImageExtension,
   verifyOwner as verifyGitHubOwner,
   type RepositoryMutation,
@@ -163,7 +164,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
 
     try {
       const cleanToken = token.trim();
-      const currentPosts = await readRepositoryJson("content/doujin-posts.json", cleanToken, posts);
+      const { data: currentPosts, expectedHeadSha } = await readRepositoryJsonSnapshot("content/doujin-posts.json", cleanToken, posts);
       const existingPost = editingId ? currentPosts.find((post) => post.id === editingId) : undefined;
       if (editingId && !existingPost) throw new Error("没有找到要修改的投稿，请刷新后重试。");
 
@@ -208,7 +209,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
         mutations.unshift(...pageMutations);
       }
       if (pages.length || remoteImages.length) existingImages.filter((path) => path.startsWith("doujin/") && !pagePaths.includes(path)).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
-      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`, mutations);
+      await commitRepositoryFiles(cleanToken, `${editingId ? "Update" : "Add"} doujin post: ${form.title.trim()}`, mutations, expectedHeadSha);
 
       setPosts(nextPosts);
       setStatus("success");
@@ -230,7 +231,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
     setMessage("正在删除投稿…");
     try {
       const cleanToken = token.trim();
-      const currentPosts = await readRepositoryJson("content/doujin-posts.json", cleanToken, posts);
+      const { data: currentPosts, expectedHeadSha } = await readRepositoryJsonSnapshot("content/doujin-posts.json", cleanToken, posts);
       const target = currentPosts.find((item) => item.id === post.id);
       if (!target) throw new Error("没有找到要删除的投稿，请刷新后重试。");
       const nextPosts = currentPosts.filter((item) => item.id !== post.id);
@@ -239,7 +240,7 @@ export default function DoujinEditor({ initialPosts, basePath }: EditorProps) {
       ];
       if (target.cover.startsWith("doujin/")) mutations.push({ path: `public/${target.cover}`, delete: true });
       (target.images ?? []).filter((path) => path.startsWith("doujin/") && path !== target.cover).forEach((path) => mutations.push({ path: `public/${path}`, delete: true }));
-      await commitRepositoryFiles(cleanToken, `Delete doujin post: ${target.title}`, mutations);
+      await commitRepositoryFiles(cleanToken, `Delete doujin post: ${target.title}`, mutations, expectedHeadSha);
       setPosts(nextPosts);
       clearForm();
       setStatus("success");

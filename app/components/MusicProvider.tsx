@@ -8,6 +8,7 @@ import type { MusicTrack } from "../../lib/music";
 type MusicContextValue = {
   isPlaying: boolean;
   hasStarted: boolean;
+  playbackError: string;
   tracks: MusicTrack[];
   currentTrack: MusicTrack | null;
   toggle: () => Promise<void>;
@@ -28,12 +29,16 @@ export default function MusicProvider({ children, basePath, tracks }: { children
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(tracks[0]?.id ?? null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [playbackError, setPlaybackError] = useState("");
   const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? tracks[0] ?? null;
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {
+      setIsPlaying(true);
+      setPlaybackError("");
+    };
     const handlePause = () => setIsPlaying(false);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
@@ -55,7 +60,8 @@ export default function MusicProvider({ children, basePath, tracks }: { children
     audio.load();
     audio.play().catch(() => {
       setIsPlaying(false);
-      setHasStarted(false);
+      setHasStarted(true);
+      setPlaybackError("当前曲目暂时无法播放，请选择其他曲目。");
     });
   }, [currentTrack]);
 
@@ -63,12 +69,14 @@ export default function MusicProvider({ children, basePath, tracks }: { children
     const audio = audioRef.current;
     if (!audio) return;
     setHasStarted(true);
+    setPlaybackError("");
     if (audio.paused) {
       try {
         await audio.play();
       } catch {
-        setHasStarted(false);
+        setHasStarted(true);
         setIsPlaying(false);
+        setPlaybackError("当前曲目暂时无法播放，请选择其他曲目。");
       }
     } else {
       audio.pause();
@@ -83,11 +91,12 @@ export default function MusicProvider({ children, basePath, tracks }: { children
     }
     pendingPlayRef.current = true;
     setHasStarted(true);
+    setPlaybackError("");
     setCurrentTrackId(trackId);
   }
 
   return (
-    <MusicContext.Provider value={{ isPlaying, hasStarted, tracks, currentTrack, toggle, playTrack }}>
+    <MusicContext.Provider value={{ isPlaying, hasStarted, playbackError, tracks, currentTrack, toggle, playTrack }}>
       {children}
       {/* Instrumental audio has no spoken content to caption. */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -96,7 +105,7 @@ export default function MusicProvider({ children, basePath, tracks }: { children
         <button className={`global-vinyl ${isPlaying ? "is-playing" : ""}`} type="button" onClick={toggle} aria-label={isPlaying ? "暂停" : "播放"}>
           {currentTrack ? <img src={`${basePath}/${currentTrack.cover}`} alt="" /> : null}
         </button>
-        <div><strong>{currentTrack?.title ?? ""}</strong><span>{currentTrack?.artist ?? ""}</span></div>
+        <div><strong>{currentTrack?.title ?? ""}</strong><span>{playbackError || currentTrack?.artist || ""}</span></div>
         <button className="global-toggle" type="button" onClick={toggle} aria-label={isPlaying ? "暂停" : "播放"}>{isPlaying ? "Ⅱ" : "▶"}</button>
       </aside>
     </MusicContext.Provider>
