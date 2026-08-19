@@ -27,7 +27,7 @@ function preloadRemainingFrames(frames: string[]) {
   return preload;
 }
 
-export default function CgBackdrop({ basePath }: { basePath: string }) {
+export default function CgBackdrop({ basePath, animated = true }: { basePath: string; animated?: boolean }) {
   const frames = useMemo(() => {
     const firstScene = Array.from(
       { length: 6 },
@@ -41,6 +41,8 @@ export default function CgBackdrop({ basePath }: { basePath: string }) {
   const sequenceDuration = frames.length * 7;
 
   useEffect(() => {
+    if (!animated) return;
+
     let cancelled = false;
     const startPreloading = () => {
       void preloadRemainingFrames(frames).then(() => {
@@ -61,11 +63,11 @@ export default function CgBackdrop({ basePath }: { basePath: string }) {
       cancelled = true;
       window.removeEventListener("load", startPreloading);
     };
-  }, [frames]);
+  }, [animated, frames]);
 
   return (
-    <div className={`cg-backdrop${framesReady ? " is-ready" : ""}`} aria-hidden="true">
-      {(framesReady ? frames : frames.slice(0, 1)).map((src, index) => (
+    <div className={`cg-backdrop${animated && framesReady ? " is-ready" : ""}`} aria-hidden="true">
+      {(animated && framesReady ? frames : frames.slice(0, 1)).map((src, index) => (
         <img
           className="cg-frame"
           key={src}

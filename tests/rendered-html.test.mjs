@@ -62,11 +62,12 @@ test("home defers the remaining CG frames and caches visual assets", async () =>
   assert.match(headers, /Cache-Control: public, max-age=604800, stale-while-revalidate=86400/);
 });
 
-test("music room stays mounted inside the public app", async () => {
-  const [html, player, provider, css] = await Promise.all([
+test("music room stays mounted with a static backdrop", async () => {
+  const [html, player, provider, publicApp, css] = await Promise.all([
     readFile(new URL("index.html", clientUrl), "utf8"),
     readFile(new URL("../app/music/MusicPlayer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/MusicProvider.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/PublicApp.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
@@ -81,6 +82,7 @@ test("music room stays mounted inside the public app", async () => {
   assert.match(player, /soft-spectrum/);
   assert.match(provider, /music-is-playing/);
   assert.match(provider, /playbackError/);
+  assert.match(publicApp, /<CgBackdrop basePath={basePath} animated={false} \/>/);
   assert.equal(JSON.parse(await readFile(new URL("../content/music-tracks.json", import.meta.url), "utf8"))[0].songId, "2737806685");
   assert.match(css, /music-breathe/);
   assert.match(css, /spectrum-wave/);
@@ -104,6 +106,10 @@ test("doujin recommendations are rendered as openable cards without likes or sor
   assert.match(gallery, /is-long-strip/);
   assert.match(gallery, /ArrowLeft/);
   assert.match(gallery, /ArrowRight/);
+  assert.match(gallery, /onLoad={\(\) => setImageLoadState\("loaded"\)}/);
+  assert.match(gallery, /onError={\(\) => setImageLoadState\("error"\)}/);
+  assert.match(gallery, /重新加载/);
+  assert.match(gallery, /单独打开或下载原图/);
   assert.match(gallery, /aria-label={`打开 \${item.title}`}/);
   assert.doesNotMatch(gallery, /like|sortMode|hikyo-doujin-device/i);
   assert.doesNotMatch(html, />管理投稿</);

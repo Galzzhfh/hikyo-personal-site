@@ -12,8 +12,11 @@ function readerImages(post: DoujinPost) {
 export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]; basePath: string }) {
   const [selectedPost, setSelectedPost] = useState<DoujinPost | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
+  const [imageAttempt, setImageAttempt] = useState(0);
+  const [imageLoadState, setImageLoadState] = useState<"loading" | "loaded" | "error">("loading");
   const pages = selectedPost ? readerImages(selectedPost) : [];
   const isLongStrip = pages.length === 1;
+  const activeImageSource = selectedPost ? doujinImageSource(basePath, pages[pageIndex]) : "";
 
   useEffect(() => {
     if (!selectedPost) return;
@@ -34,6 +37,8 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
 
   function openPost(post: DoujinPost) {
     setPageIndex(0);
+    setImageAttempt(0);
+    setImageLoadState("loading");
     setSelectedPost(post);
   }
 
@@ -61,8 +66,19 @@ export default function DoujinGallery({ posts, basePath }: { posts: DoujinPost[]
           <section className="resource-modal reader-modal" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
             <button className="resource-modal-close" type="button" onClick={() => setSelectedPost(null)} aria-label="关闭">×</button>
             <div className={`resource-reader ${isLongStrip ? "is-long-strip" : ""}`}>
-              <div className="reader-canvas">
-                <img src={doujinImageSource(basePath, pages[pageIndex])} alt={`${selectedPost.title} 第 ${pageIndex + 1} 页`} />
+              <div className={`reader-canvas is-image-${imageLoadState}`}>
+                <img
+                  key={`${activeImageSource}-${imageAttempt}`}
+                  className={imageLoadState === "error" ? "is-failed" : undefined}
+                  src={activeImageSource}
+                  alt={`${selectedPost.title} 第 ${pageIndex + 1} 页`}
+                  decoding="async"
+                  fetchPriority="high"
+                  onLoad={() => setImageLoadState("loaded")}
+                  onError={() => setImageLoadState("error")}
+                />
+                {imageLoadState === "loading" ? <div className="reader-image-status"><p>大图加载中，请稍候…</p></div> : null}
+                {imageLoadState === "error" ? <div className="reader-image-status is-error"><div><p>图片加载失败</p><button type="button" onClick={() => { setImageLoadState("loading"); setImageAttempt((value) => value + 1); }}>重新加载</button><a href={activeImageSource} target="_blank" rel="noreferrer">单独打开或下载原图</a></div></div> : null}
                 {!isLongStrip ? <>
                   <button className="reader-prev" type="button" onClick={() => setPageIndex((value) => Math.max(0, value - 1))} disabled={pageIndex === 0} aria-label="上一页">←</button>
                   <button className="reader-next" type="button" onClick={() => setPageIndex((value) => Math.min(pages.length - 1, value + 1))} disabled={pageIndex === pages.length - 1} aria-label="下一页">→</button>
