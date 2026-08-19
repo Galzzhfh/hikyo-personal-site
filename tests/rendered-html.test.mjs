@@ -41,6 +41,27 @@ test("home export uses the requested brand, copy, and CG sequence", async () => 
   }
 });
 
+test("home defers the remaining CG frames and caches visual assets", async () => {
+  const [html, backdrop, headers] = await Promise.all([
+    readFile(new URL("index.html", clientUrl), "utf8"),
+    readFile(new URL("../app/components/CgBackdrop.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../public/_headers", import.meta.url), "utf8"),
+  ]);
+
+  const backdrops = [...html.matchAll(/<div class="cg-backdrop"[^>]*>(.*?)<\/div>/gs)];
+  assert.ok(backdrops.length > 0);
+  for (const [, markup] of backdrops) {
+    assert.match(markup, /cg\/scene-01\/00000001\.webp/);
+    assert.doesNotMatch(markup, /cg\/scene-01\/00000002\.webp|cg\/scene-02\/00000336\.webp/);
+    assert.equal(markup.match(/<img/g)?.length, 1);
+  }
+  assert.match(backdrop, /window\.addEventListener\("load", startPreloading/);
+  assert.match(backdrop, /for \(const src of frames\.slice\(1\)\)/);
+  assert.match(backdrop, /await preloadImage\(src\)/);
+  assert.match(headers, /\/cg\/\*/);
+  assert.match(headers, /Cache-Control: public, max-age=604800, stale-while-revalidate=86400/);
+});
+
 test("music room stays mounted inside the public app", async () => {
   const [html, player, provider, css] = await Promise.all([
     readFile(new URL("index.html", clientUrl), "utf8"),
@@ -194,6 +215,10 @@ test("Pages deployment supports custom domains and trailing-slash management rou
   assert.match(workflow, /id: pages/);
   assert.match(workflow, /steps\.pages\.outputs\.base_path/);
   assert.match(workflow, /steps\.pages\.outputs\.base_url/);
+  assert.match(workflow, /CLOUDFLARE_API_TOKEN/);
+  assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID/);
+  assert.match(workflow, /pages deploy/);
+  assert.match(workflow, /hikyo-personal-site/);
   assert.doesNotMatch(workflow, /repo_name=/);
   assert.match(prefixScript, /"manage\/games"/);
   assert.match(prefixScript, /"manage\/anime"/);

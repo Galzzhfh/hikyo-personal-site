@@ -68,7 +68,7 @@ export default function PublicApp({ basePath, posts, games, anime }: { basePath:
         </header>
 
         <section className="hero" id="top">
-          <CgBackdrop />
+          <CgBackdrop basePath={basePath} />
           <div className="hero-shade" />
           <div className="hero-copy">
             <p className="eyebrow"><span /> PERSONAL ANIME ARCHIVE</p>
@@ -130,7 +130,7 @@ export default function PublicApp({ basePath, posts, games, anime }: { basePath:
           <a className="owner-entry" href={`${basePath}/manage`} target="_blank" rel="noreferrer" aria-label="站主管理">✦</a>
         </header>
         <section className="doujin-hero">
-          <CgBackdrop />
+          <CgBackdrop basePath={basePath} />
           <div className="doujin-hero-shade" />
           <div className="doujin-hero-copy"><p className="eyebrow"><span /> DOUJIN PICKS</p><h1>同人誌の<br />おすすめ</h1></div>
         </section>
@@ -144,7 +144,7 @@ export default function PublicApp({ basePath, posts, games, anime }: { basePath:
           <a className="owner-entry" href={`${basePath}/manage/games`} target="_blank" rel="noreferrer" aria-label="游戏管理">✦</a>
         </header>
         <section className="game-hero">
-          <CgBackdrop />
+          <CgBackdrop basePath={basePath} />
           <div className="game-hero-shade" />
           <div className="game-hero-copy"><p className="eyebrow"><span /> GAME ARCHIVE</p><h1>ゲームの<br />おすすめ</h1></div>
         </section>
@@ -158,7 +158,7 @@ export default function PublicApp({ basePath, posts, games, anime }: { basePath:
           <a className="owner-entry" href={`${basePath}/manage/anime`} target="_blank" rel="noreferrer" aria-label="动画管理">✦</a>
         </header>
         <section className="anime-hero">
-          <CgBackdrop />
+          <CgBackdrop basePath={basePath} />
           <div className="anime-hero-shade" />
           <div className="anime-hero-copy"><p className="eyebrow"><span /> ANIME ARCHIVE</p><h1>アニメの<br />おすすめ</h1></div>
         </section>
@@ -172,7 +172,7 @@ export default function PublicApp({ basePath, posts, games, anime }: { basePath:
           <a className="owner-entry" href={`${basePath}/manage/music`} target="_blank" rel="noreferrer" aria-label="站主管理">✦</a>
         </header>
         <section className="music-stage">
-          <CgBackdrop />
+          <CgBackdrop basePath={basePath} />
           <div className="music-stage-shade" />
           <div className="music-intro"><p className="eyebrow"><span /> INSTRUMENTAL ROOM</p><h1>音楽室</h1></div>
           <MusicPlayer basePath={basePath} />

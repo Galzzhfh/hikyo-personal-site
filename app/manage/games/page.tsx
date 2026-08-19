@@ -23,7 +23,7 @@ export default function GameManagePage() {
         <nav aria-label="管理导航"><a href={`${basePath}/manage`}>本子管理</a><a href={`${basePath}/manage/anime`}>动画管理</a><a href={`${basePath}/manage/music`}>音乐管理</a></nav>
         <a className="header-button" href={`${basePath}/#games`}>返回游戏 <span>↗</span></a>
       </header>
-      <section className="manage-hero"><CgBackdrop /><div className="doujin-hero-shade" /><div className="manage-hero-copy"><p className="eyebrow"><span /> OWNER GAME EDITOR</p><h1>游戏管理<small>ゲームを記録する</small></h1></div></section>
+      <section className="manage-hero"><CgBackdrop basePath={basePath} /><div className="doujin-hero-shade" /><div className="manage-hero-copy"><p className="eyebrow"><span /> OWNER GAME EDITOR</p><h1>游戏管理<small>ゲームを記録する</small></h1></div></section>
       <VisualArchiveEditor initialItems={gamesData as GamePost[]} basePath={basePath} kind="game" />
     </main>
   );

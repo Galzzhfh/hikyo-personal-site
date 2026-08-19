@@ -32,7 +32,7 @@ export default function ManagePage() {
       </header>
 
       <section className="manage-hero">
-        <CgBackdrop />
+        <CgBackdrop basePath={basePath} />
         <div className="doujin-hero-shade" />
         <div className="manage-hero-copy">
           <p className="eyebrow"><span /> OWNER EDITOR</p>

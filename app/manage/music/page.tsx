@@ -31,7 +31,7 @@ export default function MusicManagePage() {
         <a className="header-button" href={`${basePath}/music`}>返回音乐 <span>↗</span></a>
       </header>
       <section className="manage-hero">
-        <CgBackdrop />
+        <CgBackdrop basePath={basePath} />
         <div className="doujin-hero-shade" />
         <div className="manage-hero-copy">
           <p className="eyebrow"><span /> OWNER MUSIC EDITOR</p>

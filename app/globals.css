@@ -141,11 +141,14 @@ html[data-time-theme="night"] .time-theme-veil { opacity: .28; background: linea
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  animation: cg-frame var(--sequence-duration) cubic-bezier(.45, 0, .3, 1) infinite;
-  animation-delay: var(--frame-delay);
   transform: scale(1.04) translate3d(0, 0, 0);
   filter: blur(3px) var(--time-filter);
   will-change: opacity, transform, filter;
+}
+.cg-backdrop:not(.is-ready) .cg-frame:first-child { opacity: 1; filter: var(--time-filter); }
+.cg-backdrop.is-ready .cg-frame {
+  animation: cg-frame var(--sequence-duration) cubic-bezier(.45, 0, .3, 1) infinite;
+  animation-delay: var(--frame-delay);
 }
 .hero-shade {
   position: absolute;
@@ -744,8 +747,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .petals { display: none; }
-  .cg-frame { display: none; animation: none; }
-  .cg-frame:first-child { display: block; opacity: 1; transform: none; }
+  .cg-backdrop.is-ready .cg-frame, .cg-frame { display: none; animation: none; }
+  .cg-backdrop .cg-frame:first-child { display: block; opacity: 1; transform: none; }
   .mini-record, .is-playing .vinyl, .motto span, .resource-card, .archive-card, .preview-cover img, .global-vinyl.is-playing, .resource-modal-backdrop, .resource-modal, .soft-spectrum span, .music-stage-shade::after { animation: none; opacity: 1; }
   .hero::after, .doujin-hero::after, .game-hero::after, .anime-hero::after, .manage-hero::after, .music-stage::after { animation: none; }
 }
