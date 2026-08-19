@@ -104,9 +104,12 @@ test("doujin recommendations are rendered as openable cards without likes or sor
   assert.match(gallery, /role="dialog"/);
   assert.match(gallery, /reader-canvas/);
   assert.match(gallery, /is-long-strip/);
+  assert.match(gallery, /naturalHeight > naturalWidth \* 3/);
+  assert.doesNotMatch(gallery, /const isLongStrip = pages\.length === 1/);
+  assert.match(gallery, /reader-long-strip-controls/);
   assert.match(gallery, /ArrowLeft/);
   assert.match(gallery, /ArrowRight/);
-  assert.match(gallery, /onLoad={\(\) => setImageLoadState\("loaded"\)}/);
+  assert.match(gallery, /setImageLoadState\("loaded"\)/);
   assert.match(gallery, /onError={\(\) => setImageLoadState\("error"\)}/);
   assert.match(gallery, /重新加载/);
   assert.match(gallery, /单独打开或下载原图/);
